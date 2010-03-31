@@ -1,2 +1,8 @@
-XGB is the Go equivalent of XCB, the X protocol C-language Binding
+XGB is the X protocol Go language Binding.
+
+It is the Go equivalent of XCB, the X protocol C-language Binding
 (http://xcb.freedesktop.org/).
+
+Unless otherwise noted, the XGB source files are distributed
+under the BSD-style license found in the LICENSE file.
+
