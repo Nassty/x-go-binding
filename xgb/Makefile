@@ -4,7 +4,7 @@
 
 include $(GOROOT)/src/Make.$(GOARCH)
 
-TARG=xgb
+TARG=x-go-binding.googlecode.com/hg/xgb
 GOFILES=\
 	auth.go\
 	xgb.go\
