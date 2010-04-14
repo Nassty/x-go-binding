@@ -549,7 +549,9 @@ const FocusOut = 10
 
 type FocusOutEvent FocusInEvent
 
-func getFocusOutEvent(b []byte) FocusOutEvent { return (FocusOutEvent)(getFocusInEvent(b)) }
+func getFocusOutEvent(b []byte) FocusOutEvent {
+	return (FocusOutEvent)(getFocusInEvent(b))
+}
 
 const KeymapNotify = 11
 

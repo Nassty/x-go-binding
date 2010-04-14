@@ -20,26 +20,6 @@ def go(fmt, *args):
 namere = re.compile('([A-Z0-9][a-z]+|[A-Z0-9]+(?![a-z])|[a-z]+)')
 allcaps = re.compile('^[A-Z0-9]+$')
 
-sizeoftab = {
-	"byte": 1,
-	"int8": 1,
-	"uint8": 1,
-	"int16": 2,
-	"uint16": 2,
-	"int32": 4,
-	"uint32": 4,
-	"float32": 4,
-	"float64": 8,
-	"Id": 4,
-	"Keysym": 4,
-	"Timestamp": 4,
-}
-
-def sizeof(t):
-	if t in sizeoftab:
-		return sizeoftab[t]
-	return 4
-
 symbols = []
 
 def readsymbols(filename):
@@ -52,61 +32,36 @@ def readsymbols(filename):
 # Name munging crap for names, enums and types.
 #
 
-mangletab = {
-	"int8_t":	"int8",
-	"uint8_t":	"byte",
-	"uint16_t":	"uint16",
-	"uint32_t":	"uint32",
-	"int16_t":	"int16",
-	"int32_t":	"int32",
-	"float":		"float32",
-	"double":	"float64",
-	"char":		"byte",
-	"void":		"byte",
-	'VISUALTYPE':	'VisualInfo',
-	'DEPTH':		'DepthInfo',
-	'SCREEN':	'ScreenInfo',
-	'Setup':		'SetupInfo',
-	'WINDOW':	'Id',
-}
-
-def mangle(str):
-	if str in mangletab:
-		return mangletab[str]
-	return str
-
 def camel(str):
 	return str[0].upper() + str[1:]
 def uncamel(str):
-	return str[0].lower() + str[1:]
+	return str[0].lower() + str[1:]	
 
-def nitem(str):
-	split = namere.finditer(str)
-	return ''.join([camel(match.group(0)) for match in split])
-
-def titem(str):
-	str = mangle(str)
-	if str in sizeoftab:
-		return str
-	if allcaps.match(str):
-		return str.capitalize()
-	return nitem(str)
-
-def n(list):
-	"Mangle name (JoinedCamelCase) and chop off 'xcb' prefix."
+def no_ns(list):
+	"Chop off 'xcb' prefix."
 	if len(list) == 1:
-		parts = [nitem(list[0])]
+		parts = [list[0],]
 	else:
-		parts = [nitem(x) for x in list[1:]]
+		parts = list[1:]
 	return ''.join(parts)
 
-def t(list):
-	"Mangle name (JoinedCamelCase) and chop off 'xcb' prefix. Preserve primitive type names."
-	if len(list) == 1:
-		return titem(list[0])
+namestab = {
+	'VISUALTYPE':	'VisualInfo',
+	'DEPTH':		'DepthInfo',
+	'SCREEN':		'ScreenInfo',
+	'Setup':		'SetupInfo',
+}
+	
+def _name(name):
+	"Camelize/capitalize name."
+	if name in namestab:
+		return namestab[name]
 	else:
-		parts = [titem(x) for x in list[1:]]
-	return ''.join(parts)
+		if allcaps.match(name):
+			return name.capitalize()
+		else:
+			split = namere.finditer(name)
+			return ''.join([camel(match.group(0)) for match in split])
 
 #
 # Various helper functions
@@ -121,10 +76,10 @@ def go_type_setup(self, name, postfix):
 	Recurses into child fields and list member types.
 	'''
 	# Do all the various names in advance
-	self.c_type = t(name + postfix)
-	self.c_request_name = n(name)
-	self.c_reply_name = n(name + ('Reply',))
-	self.c_reply_type = t(name + ('Reply',))
+	self.c_type = no_ns(name + postfix)
+	self.c_request_name = no_ns(name)
+	self.c_reply_name = no_ns(name + ('Reply',))
+	self.c_reply_type = no_ns(name + ('Reply',))
 
 	if not self.is_container:
 		return
@@ -134,8 +89,8 @@ def go_type_setup(self, name, postfix):
 		go_type_setup(field.type, field.field_type, ())
 		if field.type.is_list:
 			go_type_setup(field.type.member, field.field_type, ())
-		field.c_field_type = t(field.field_type)
-		field.c_field_name = n((field.field_name,))
+		field.c_field_type = no_ns(field.field_type)
+		field.c_field_name = _name(no_ns((field.field_name,)))
 		field.c_subscript = '[%d]' % field.type.nmemb if (field.type.nmemb > 1) else ''
 		field.c_pointer = ' ' if field.type.nmemb == 1 else '[]'
 		field.c_offset = offset
@@ -150,7 +105,7 @@ def go_accessor_length(expr, prefix, iswriting):
 	'''
 	prefarrow = '' if prefix == '' else prefix + '.'
 	if expr.lenfield_name != None:
-		lenstr = prefarrow + n((expr.lenfield_name,))
+		lenstr = prefarrow + _name(no_ns((expr.lenfield_name,)))
 		if iswriting and lenstr.endswith("Len"):
 			# chop off ...Len and refer to len(array) instead
 			return "len(" +   lenstr[:-3] + ")"
@@ -219,7 +174,7 @@ def go_get_list(dst, ofs, typename, typesize, count):
 		go('copy(v.%s[0:%s], b[%s:])', dst, count, ofs)
 	else:
 		go('for i := 0; i < %s; i++ {', count)
-		go_get(dst + "[i]", ofs + "+i*" + str(typesize), typename, typesize)
+		go_get(dst + "[i]", str(ofs) + "+i*" + str(typesize), typename, typesize)
 		go('}')
 
 
@@ -245,9 +200,9 @@ def go_complex_reader_help(self, fieldlist):
 			else:
 				go('offset = pad(offset)')
 			go('v.%s = make([]%s, %s)', fieldname, fieldtype, lenstr)
-			if fieldtype in sizeoftab:
-				go_get_list(fieldname, "offset", fieldtype, sizeoftab[fieldtype], "len(v."+fieldname+")")
-				go('offset += len(v.%s) * %d', fieldname, sizeoftab[fieldtype])
+			if field.type.size <= 4 and field.type.size != None:
+				go_get_list(fieldname, "offset", fieldtype, field.type.size, "len(v."+fieldname+")")
+				go('offset += len(v.%s) * %d', fieldname, field.type.size)
 			else:
 				go('for i := 0; i < %s; i++ {', lenstr)
 				go('	offset += get%s(b[offset:], &v.%s[i])', fieldtype, fieldname)
@@ -312,7 +267,7 @@ def go_complex_writer_arguments(param_fields, endstr):
 	out = []
 	for field in param_fields:
 		namestr = field.c_field_name
-		typestr = field.c_pointer + t(field.field_type)
+		typestr = field.c_pointer + field.c_field_type
 		if typestr == '[]byte' and namestr == 'Name':
 			typestr = 'string'
 		out.append(namestr + ' ' + typestr)
@@ -380,15 +335,15 @@ def go_complex_writer(self, name, void):
 			if field.type.is_list:
 				fieldname = field.c_field_name
 				lenstr = go_accessor_expr(field.type.expr, '', True)
-				if t(field.field_type) == 'byte':
+				if field.c_field_type == 'byte':
 					if fieldname == 'Name':
 						go('	c.sendString(%s)', fieldname)
 					else:
 						go('	c.sendBytes(%s[0:%s])', fieldname, lenstr)
-				elif t(field.field_type) == 'uint32':
+				elif field.c_field_type == 'uint32':
 					go('	c.sendUInt32List(%s[0:%s])', fieldname, lenstr)
 				else:
-					go('	c.send%sList(%s, %s)', t(field.field_type), fieldname, lenstr)
+					go('	c.send%sList(%s, %s)', camel(field.c_field_type), fieldname, lenstr)
 	
 	if not void and firstvar:
 		go('	return cookie')
@@ -409,8 +364,8 @@ def go_complex_writer(self, name, void):
 
 def go_struct(self, name):
 	go_type_setup(self, name, ())
-	if symbols and t(name) not in symbols:
-		go('// excluding struct %s\n', t(name))
+	if symbols and no_ns(name) not in symbols:
+		go('// excluding struct %s\n', no_ns(name))
 		return
 	
 	if self.c_type == 'SetupRequest': return
@@ -481,8 +436,8 @@ def go_request(self, name):
 	Exported function that handles request declarations.
 	'''
 	go_type_setup(self, name, ('Request',))
-	if symbols and n(name) not in symbols:
-		go('// excluding request %s\n', n(name))
+	if symbols and no_ns(name) not in symbols:
+		go('// excluding request %s\n', no_ns(name))
 		return
 	
 	if self.reply:
@@ -521,13 +476,13 @@ def go_event(self, name):
 	Exported function that handles event declarations.
 	'''
 	go_type_setup(self, name, ('Event',))
-	if symbols and t(name) not in symbols:
-		go('// excluding event %s\n', t(name))
+	if symbols and no_ns(name) not in symbols:
+		go('// excluding event %s\n', no_ns(name))
 		return
 	
-	eventlist.append(n(name))
+	eventlist.append(no_ns(name))
 	
-	go('const %s = %s', t(name), self.opcodes[name])
+	go('const %s = %s', no_ns(name), self.opcodes[name])
 	go('')
 	fields = eventfields(self)
 	if self.name == name:
@@ -541,10 +496,10 @@ def go_event(self, name):
 		go('')
 	else:
 		# maybe skip this depending on how it interacts with type switching on interfaces
-		go('type %s %s', n(name + ('Event',)), n(self.name + ('Event',)))
+		go('type %s %s', no_ns(name + ('Event',)), no_ns(self.name + ('Event',)))
 		go('')
 		go('func get%s(b []byte) %s {', self.c_type, self.c_type)
-		go('	return (%s)(get%s(b))', n(name + ('Event',)), n(self.name + ('Event',)))
+		go('	return (%s)(get%s(b))', no_ns(name + ('Event',)), no_ns(self.name + ('Event',)))
 		go('}')
 		go('')
 
@@ -564,14 +519,6 @@ def go_simple(self, name):
 			name = name[2]
 		else:
 			name = name[1]
-		if name == "KEYSYM":
-			mangletab[name] = "Keysym"
-		elif name == "TIMESTAMP":
-			mangletab[name] = "Timestamp"
-		elif self.size == 4:
-			mangletab[name] = "Id"
-		else:
-			mangletab[name] = t(self.name)
 
 #
 # Dump enums as consts, calculate implicit values instead
@@ -579,8 +526,8 @@ def go_simple(self, name):
 #
 
 def go_enum(self, name):
-	if symbols and t(name) not in symbols:
-		go('// excluding enum %s\n', t(name))
+	if symbols and no_ns(name) not in symbols:
+		go('// excluding enum %s\n', no_ns(name))
 		return
 	go('const (')
 	iota = 0
@@ -593,7 +540,7 @@ def go_enum(self, name):
 		if name[1] == 'Atom':
 			s = name[1] + "".join([x.capitalize() for x in enam.split("_")])
 		else:
-			s = n(name + (enam,))
+			s = no_ns(name) + _name(enam)
 		go('	%s = %s', s, eval)
 	go(')')
 	go('')
@@ -611,8 +558,8 @@ def go_error(self, name):
 	'''
 	Exported function that handles error declarations.
 	'''
-	errorlist.append(n(name))
-	go('const Bad%s = %s', n(name), self.opcodes[name])
+	errorlist.append(no_ns(name))
+	go('const Bad%s = %s', no_ns(name), self.opcodes[name])
 	go('')
 
 #
@@ -698,7 +645,69 @@ except ImportError:
 	print ''
 	raise
 
+# Matcher function for xidtype, always set name = 'Id' for xidtype.
+def xidtype(node, module, namespace):
+    id = node.get('name')
+    name = namespace.prefix + ('Id',)
+    type = module.get_type('Id')
+    module.add_type(id, namespace.ns, name, type)
+
+# Matcher function for struct, fix naming.
+def struct(node, module, namespace):
+    id = node.get('name')
+    name = namespace.prefix + (_name(id),)
+    type = Struct(name, node)
+    module.add_type(id, namespace.ns, name, type)
+
+# Matcher function for xidunion, fix naming.
+def xidunion(node, module, namespace):
+    id = node.get('name')
+    name = namespace.prefix + (_name(id),)
+    type = module.get_type('CARD32')
+    module.add_type(id, namespace.ns, name, type)
+    
+from xcbgen.state import matcher
+matcher.funcs['xidtype'] = xidtype
+matcher.funcs['struct'] = struct
+matcher.funcs['xidunion'] = xidunion
+
+from xcbgen import xtypes
+from xcbgen.xtypes import SimpleType, Struct
+xtypes.tcard8 = SimpleType(('uint8',), 1)
+xtypes.tcard16 = SimpleType(('uint16',), 2)
+xtypes.tcard32 = SimpleType(('uint32',), 4)
+xtypes.tint8 =  SimpleType(('int8',), 1)
+xtypes.tint16 = SimpleType(('int16',), 2)
+xtypes.tint32 = SimpleType(('int32',), 4)
+xtypes.tchar =  SimpleType(('char',), 1)
+xtypes.tfloat = SimpleType(('float',), 4)
+xtypes.tdouble = SimpleType(('double',), 8)
+#tbool = SimpleType(('bool',), 1)
+tid = SimpleType(('Id',), 4)
+
 module = Module(args[0], output)
+module.types = {}
+module.add_type('CARD8', '', ('byte',), xtypes.tcard8)
+module.add_type('CARD16', '', ('uint16',), xtypes.tcard16)
+module.add_type('CARD32', '', ('uint32',), xtypes.tcard32)
+module.add_type('INT8', '', ('int8',), xtypes.tint8)
+module.add_type('INT16', '', ('int16',), xtypes.tint16)
+module.add_type('INT32', '', ('int32',), xtypes.tint32)
+module.add_type('BYTE', '', ('byte',), xtypes.tcard8)
+module.add_type('BOOL', '', ('byte',), xtypes.tcard8)
+module.add_type('char', '', ('byte',), xtypes.tchar)
+module.add_type('float', '', ('float',), xtypes.tfloat)
+module.add_type('double', '', ('double',), xtypes.tdouble)
+module.add_type('void', '', ('byte',), xtypes.tcard8)
+module.add_type('Id', '', ('Id',), tid)
+module.add_type('FONTABLE', '', ('Id',), tid)
+module.add_type('DRAWABLE', '', ('Id',), tid)
+module.add_type('VISUALID', '', ('Id',), tid)
+module.add_type('TIMESTAMP', '', ('Timestamp',), xtypes.tcard32)
+module.add_type('KEYSYM', '', ('Keysym',), xtypes.tcard32)
+module.add_type('KEYCODE', '', ('byte',), xtypes.tcard8)
+module.add_type('BUTTON', '', ('byte',), xtypes.tcard8)
+
 module.register()
 module.resolve()
 module.generate()
