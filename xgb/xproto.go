@@ -215,7 +215,7 @@ type ScreenInfo struct {
 	MaxInstalledMaps    uint16
 	RootVisual          Id
 	BackingStores       byte
-	SaveUnders          byte
+	SaveUnders          bool
 	RootDepth           byte
 	AllowedDepthsLen    byte
 	AllowedDepths       []DepthInfo
@@ -235,7 +235,7 @@ func getScreenInfo(b []byte, v *ScreenInfo) int {
 	v.MaxInstalledMaps = get16(b[30:])
 	v.RootVisual = Id(get32(b[32:]))
 	v.BackingStores = b[36]
-	v.SaveUnders = b[37]
+	v.SaveUnders = b[37] != 0
 	v.RootDepth = b[38]
 	v.AllowedDepthsLen = b[39]
 	offset := 40
@@ -356,7 +356,7 @@ type KeyPressEvent struct {
 	EventX     int16
 	EventY     int16
 	State      uint16
-	SameScreen byte
+	SameScreen bool
 }
 
 func getKeyPressEvent(b []byte) KeyPressEvent {
@@ -371,7 +371,7 @@ func getKeyPressEvent(b []byte) KeyPressEvent {
 	v.EventX = int16(get16(b[24:]))
 	v.EventY = int16(get16(b[26:]))
 	v.State = get16(b[28:])
-	v.SameScreen = b[30]
+	v.SameScreen = b[30] != 0
 	return v
 }
 
@@ -405,7 +405,7 @@ type ButtonPressEvent struct {
 	EventX     int16
 	EventY     int16
 	State      uint16
-	SameScreen byte
+	SameScreen bool
 }
 
 func getButtonPressEvent(b []byte) ButtonPressEvent {
@@ -420,7 +420,7 @@ func getButtonPressEvent(b []byte) ButtonPressEvent {
 	v.EventX = int16(get16(b[24:]))
 	v.EventY = int16(get16(b[26:]))
 	v.State = get16(b[28:])
-	v.SameScreen = b[30]
+	v.SameScreen = b[30] != 0
 	return v
 }
 
@@ -450,7 +450,7 @@ type MotionNotifyEvent struct {
 	EventX     int16
 	EventY     int16
 	State      uint16
-	SameScreen byte
+	SameScreen bool
 }
 
 func getMotionNotifyEvent(b []byte) MotionNotifyEvent {
@@ -465,7 +465,7 @@ func getMotionNotifyEvent(b []byte) MotionNotifyEvent {
 	v.EventX = int16(get16(b[24:]))
 	v.EventY = int16(get16(b[26:]))
 	v.State = get16(b[28:])
-	v.SameScreen = b[30]
+	v.SameScreen = b[30] != 0
 	return v
 }
 
@@ -659,7 +659,7 @@ type CreateNotifyEvent struct {
 	Width            uint16
 	Height           uint16
 	BorderWidth      uint16
-	OverrideRedirect byte
+	OverrideRedirect bool
 }
 
 func getCreateNotifyEvent(b []byte) CreateNotifyEvent {
@@ -671,7 +671,7 @@ func getCreateNotifyEvent(b []byte) CreateNotifyEvent {
 	v.Width = get16(b[16:])
 	v.Height = get16(b[18:])
 	v.BorderWidth = get16(b[20:])
-	v.OverrideRedirect = b[22]
+	v.OverrideRedirect = b[22] != 0
 	return v
 }
 
@@ -694,14 +694,14 @@ const UnmapNotify = 18
 type UnmapNotifyEvent struct {
 	Event         Id
 	Window        Id
-	FromConfigure byte
+	FromConfigure bool
 }
 
 func getUnmapNotifyEvent(b []byte) UnmapNotifyEvent {
 	var v UnmapNotifyEvent
 	v.Event = Id(get32(b[4:]))
 	v.Window = Id(get32(b[8:]))
-	v.FromConfigure = b[12]
+	v.FromConfigure = b[12] != 0
 	return v
 }
 
@@ -710,14 +710,14 @@ const MapNotify = 19
 type MapNotifyEvent struct {
 	Event            Id
 	Window           Id
-	OverrideRedirect byte
+	OverrideRedirect bool
 }
 
 func getMapNotifyEvent(b []byte) MapNotifyEvent {
 	var v MapNotifyEvent
 	v.Event = Id(get32(b[4:]))
 	v.Window = Id(get32(b[8:]))
-	v.OverrideRedirect = b[12]
+	v.OverrideRedirect = b[12] != 0
 	return v
 }
 
@@ -743,7 +743,7 @@ type ReparentNotifyEvent struct {
 	Parent           Id
 	X                int16
 	Y                int16
-	OverrideRedirect byte
+	OverrideRedirect bool
 }
 
 func getReparentNotifyEvent(b []byte) ReparentNotifyEvent {
@@ -753,7 +753,7 @@ func getReparentNotifyEvent(b []byte) ReparentNotifyEvent {
 	v.Parent = Id(get32(b[12:]))
 	v.X = int16(get16(b[16:]))
 	v.Y = int16(get16(b[18:]))
-	v.OverrideRedirect = b[20]
+	v.OverrideRedirect = b[20] != 0
 	return v
 }
 
@@ -768,7 +768,7 @@ type ConfigureNotifyEvent struct {
 	Width            uint16
 	Height           uint16
 	BorderWidth      uint16
-	OverrideRedirect byte
+	OverrideRedirect bool
 }
 
 func getConfigureNotifyEvent(b []byte) ConfigureNotifyEvent {
@@ -781,7 +781,7 @@ func getConfigureNotifyEvent(b []byte) ConfigureNotifyEvent {
 	v.Width = get16(b[20:])
 	v.Height = get16(b[22:])
 	v.BorderWidth = get16(b[24:])
-	v.OverrideRedirect = b[26]
+	v.OverrideRedirect = b[26] != 0
 	return v
 }
 
@@ -1050,7 +1050,7 @@ const ColormapNotify = 32
 type ColormapNotifyEvent struct {
 	Window   Id
 	Colormap Id
-	New      byte
+	New      bool
 	State    byte
 }
 
@@ -1058,7 +1058,7 @@ func getColormapNotifyEvent(b []byte) ColormapNotifyEvent {
 	var v ColormapNotifyEvent
 	v.Window = Id(get32(b[4:]))
 	v.Colormap = Id(get32(b[8:]))
-	v.New = b[12]
+	v.New = b[12] != 0
 	v.State = b[13]
 	return v
 }
@@ -1240,10 +1240,10 @@ type GetWindowAttributesReply struct {
 	WinGravity         byte
 	BackingPlanes      uint32
 	BackingPixel       uint32
-	SaveUnder          byte
-	MapIsInstalled     byte
+	SaveUnder          bool
+	MapIsInstalled     bool
 	MapState           byte
-	OverrideRedirect   byte
+	OverrideRedirect   bool
 	Colormap           Id
 	AllEventMasks      uint32
 	YourEventMask      uint32
@@ -1263,10 +1263,10 @@ func (c *Conn) GetWindowAttributesReply(cookie Cookie) (*GetWindowAttributesRepl
 	v.WinGravity = b[15]
 	v.BackingPlanes = get32(b[16:])
 	v.BackingPixel = get32(b[20:])
-	v.SaveUnder = b[24]
-	v.MapIsInstalled = b[25]
+	v.SaveUnder = b[24] != 0
+	v.MapIsInstalled = b[25] != 0
 	v.MapState = b[26]
-	v.OverrideRedirect = b[27]
+	v.OverrideRedirect = b[27] != 0
 	v.Colormap = Id(get32(b[28:]))
 	v.AllEventMasks = get32(b[32:])
 	v.YourEventMask = get32(b[36:])
@@ -1466,20 +1466,24 @@ func (c *Conn) QueryTreeReply(cookie Cookie) (*QueryTreeReply, os.Error) {
 	return v, nil
 }
 
-func (c *Conn) InternAtomRequest(OnlyIfExists byte, Name string) Cookie {
+func (c *Conn) InternAtomRequest(OnlyIfExists bool, Name string) Cookie {
 	b := c.scratch[0:8]
 	n := 8
 	n += pad(len(Name) * 1)
 	put16(b[2:], uint16(n/4))
 	b[0] = 16
-	b[1] = OnlyIfExists
+	if OnlyIfExists {
+		b[1] = 1
+	} else {
+		b[1] = 0
+	}
 	put16(b[4:], uint16(len(Name)))
 	cookie := c.sendRequest(b)
 	c.sendString(Name)
 	return cookie
 }
 
-func (c *Conn) InternAtom(OnlyIfExists byte, Name string) (*InternAtomReply, os.Error) {
+func (c *Conn) InternAtom(OnlyIfExists bool, Name string) (*InternAtomReply, os.Error) {
 	return c.InternAtomReply(c.InternAtomRequest(OnlyIfExists, Name))
 }
 
@@ -1563,11 +1567,15 @@ const (
 	GetPropertyTypeAny = 0
 )
 
-func (c *Conn) GetPropertyRequest(Delete byte, Window Id, Property Id, Type Id, LongOffset uint32, LongLength uint32) Cookie {
+func (c *Conn) GetPropertyRequest(Delete bool, Window Id, Property Id, Type Id, LongOffset uint32, LongLength uint32) Cookie {
 	b := c.scratch[0:24]
 	put16(b[2:], 6)
 	b[0] = 20
-	b[1] = Delete
+	if Delete {
+		b[1] = 1
+	} else {
+		b[1] = 0
+	}
 	put32(b[4:], uint32(Window))
 	put32(b[8:], uint32(Property))
 	put32(b[12:], uint32(Type))
@@ -1576,7 +1584,7 @@ func (c *Conn) GetPropertyRequest(Delete byte, Window Id, Property Id, Type Id, 
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetProperty(Delete byte, Window Id, Property Id, Type Id, LongOffset uint32, LongLength uint32) (*GetPropertyReply, os.Error) {
+func (c *Conn) GetProperty(Delete bool, Window Id, Property Id, Type Id, LongOffset uint32, LongLength uint32) (*GetPropertyReply, os.Error) {
 	return c.GetPropertyReply(c.GetPropertyRequest(Delete, Window, Property, Type, LongOffset, LongLength))
 }
 
@@ -1691,11 +1699,15 @@ const (
 	SendEventDestItemFocus     = 1
 )
 
-func (c *Conn) SendEvent(Propagate byte, Destination Id, EventMask uint32, Event []byte) {
+func (c *Conn) SendEvent(Propagate bool, Destination Id, EventMask uint32, Event []byte) {
 	b := make([]byte, 44)
 	put16(b[2:], 11)
 	b[0] = 25
-	b[1] = Propagate
+	if Propagate {
+		b[1] = 1
+	} else {
+		b[1] = 0
+	}
 	put32(b[4:], uint32(Destination))
 	put32(b[8:], EventMask)
 	copy(b[12:44], Event)
@@ -1719,11 +1731,15 @@ const (
 	CursorNone = 0
 )
 
-func (c *Conn) GrabPointerRequest(OwnerEvents byte, GrabWindow Id, EventMask uint16, PointerMode byte, KeyboardMode byte, ConfineTo Id, Cursor Id, Time Timestamp) Cookie {
+func (c *Conn) GrabPointerRequest(OwnerEvents bool, GrabWindow Id, EventMask uint16, PointerMode byte, KeyboardMode byte, ConfineTo Id, Cursor Id, Time Timestamp) Cookie {
 	b := c.scratch[0:24]
 	put16(b[2:], 6)
 	b[0] = 26
-	b[1] = OwnerEvents
+	if OwnerEvents {
+		b[1] = 1
+	} else {
+		b[1] = 0
+	}
 	put32(b[4:], uint32(GrabWindow))
 	put16(b[8:], EventMask)
 	b[10] = PointerMode
@@ -1734,7 +1750,7 @@ func (c *Conn) GrabPointerRequest(OwnerEvents byte, GrabWindow Id, EventMask uin
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GrabPointer(OwnerEvents byte, GrabWindow Id, EventMask uint16, PointerMode byte, KeyboardMode byte, ConfineTo Id, Cursor Id, Time Timestamp) (*GrabPointerReply, os.Error) {
+func (c *Conn) GrabPointer(OwnerEvents bool, GrabWindow Id, EventMask uint16, PointerMode byte, KeyboardMode byte, ConfineTo Id, Cursor Id, Time Timestamp) (*GrabPointerReply, os.Error) {
 	return c.GrabPointerReply(c.GrabPointerRequest(OwnerEvents, GrabWindow, EventMask, PointerMode, KeyboardMode, ConfineTo, Cursor, Time))
 }
 
@@ -1769,11 +1785,15 @@ const (
 	ButtonIndex5   = 5
 )
 
-func (c *Conn) GrabButton(OwnerEvents byte, GrabWindow Id, EventMask uint16, PointerMode byte, KeyboardMode byte, ConfineTo Id, Cursor Id, Button byte, Modifiers uint16) {
+func (c *Conn) GrabButton(OwnerEvents bool, GrabWindow Id, EventMask uint16, PointerMode byte, KeyboardMode byte, ConfineTo Id, Cursor Id, Button byte, Modifiers uint16) {
 	b := c.scratch[0:24]
 	put16(b[2:], 6)
 	b[0] = 28
-	b[1] = OwnerEvents
+	if OwnerEvents {
+		b[1] = 1
+	} else {
+		b[1] = 0
+	}
 	put32(b[4:], uint32(GrabWindow))
 	put16(b[8:], EventMask)
 	b[10] = PointerMode
@@ -1805,11 +1825,15 @@ func (c *Conn) ChangeActivePointerGrab(Cursor Id, Time Timestamp, EventMask uint
 	c.sendRequest(b)
 }
 
-func (c *Conn) GrabKeyboardRequest(OwnerEvents byte, GrabWindow Id, Time Timestamp, PointerMode byte, KeyboardMode byte) Cookie {
+func (c *Conn) GrabKeyboardRequest(OwnerEvents bool, GrabWindow Id, Time Timestamp, PointerMode byte, KeyboardMode byte) Cookie {
 	b := c.scratch[0:16]
 	put16(b[2:], 4)
 	b[0] = 31
-	b[1] = OwnerEvents
+	if OwnerEvents {
+		b[1] = 1
+	} else {
+		b[1] = 0
+	}
 	put32(b[4:], uint32(GrabWindow))
 	put32(b[8:], uint32(Time))
 	b[12] = PointerMode
@@ -1817,7 +1841,7 @@ func (c *Conn) GrabKeyboardRequest(OwnerEvents byte, GrabWindow Id, Time Timesta
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GrabKeyboard(OwnerEvents byte, GrabWindow Id, Time Timestamp, PointerMode byte, KeyboardMode byte) (*GrabKeyboardReply, os.Error) {
+func (c *Conn) GrabKeyboard(OwnerEvents bool, GrabWindow Id, Time Timestamp, PointerMode byte, KeyboardMode byte) (*GrabKeyboardReply, os.Error) {
 	return c.GrabKeyboardReply(c.GrabKeyboardRequest(OwnerEvents, GrabWindow, Time, PointerMode, KeyboardMode))
 }
 
@@ -1847,11 +1871,15 @@ const (
 	GrabAny = 0
 )
 
-func (c *Conn) GrabKey(OwnerEvents byte, GrabWindow Id, Modifiers uint16, Key byte, PointerMode byte, KeyboardMode byte) {
+func (c *Conn) GrabKey(OwnerEvents bool, GrabWindow Id, Modifiers uint16, Key byte, PointerMode byte, KeyboardMode byte) {
 	b := c.scratch[0:16]
 	put16(b[2:], 4)
 	b[0] = 33
-	b[1] = OwnerEvents
+	if OwnerEvents {
+		b[1] = 1
+	} else {
+		b[1] = 0
+	}
 	put32(b[4:], uint32(GrabWindow))
 	put16(b[8:], Modifiers)
 	b[10] = Key
@@ -1917,7 +1945,7 @@ func (c *Conn) QueryPointer(Window Id) (*QueryPointerReply, os.Error) {
 }
 
 type QueryPointerReply struct {
-	SameScreen byte
+	SameScreen bool
 	Root       Id
 	Child      Id
 	RootX      int16
@@ -1933,7 +1961,7 @@ func (c *Conn) QueryPointerReply(cookie Cookie) (*QueryPointerReply, os.Error) {
 		return nil, error
 	}
 	v := new(QueryPointerReply)
-	v.SameScreen = b[1]
+	v.SameScreen = b[1] != 0
 	v.Root = Id(get32(b[8:]))
 	v.Child = Id(get32(b[12:]))
 	v.RootX = int16(get16(b[16:]))
@@ -2018,7 +2046,7 @@ func (c *Conn) TranslateCoordinates(SrcWindow Id, DstWindow Id, SrcX int16, SrcY
 }
 
 type TranslateCoordinatesReply struct {
-	SameScreen byte
+	SameScreen bool
 	Child      Id
 	DstX       uint16
 	DstY       uint16
@@ -2030,7 +2058,7 @@ func (c *Conn) TranslateCoordinatesReply(cookie Cookie) (*TranslateCoordinatesRe
 		return nil, error
 	}
 	v := new(TranslateCoordinatesReply)
-	v.SameScreen = b[1]
+	v.SameScreen = b[1] != 0
 	v.Child = Id(get32(b[8:]))
 	v.DstX = get16(b[12:])
 	v.DstY = get16(b[14:])
@@ -2222,7 +2250,7 @@ type QueryFontReply struct {
 	DrawDirection  byte
 	MinByte1       byte
 	MaxByte1       byte
-	AllCharsExist  byte
+	AllCharsExist  bool
 	FontAscent     int16
 	FontDescent    int16
 	CharInfosLen   uint32
@@ -2245,7 +2273,7 @@ func (c *Conn) QueryFontReply(cookie Cookie) (*QueryFontReply, os.Error) {
 	v.DrawDirection = b[48]
 	v.MinByte1 = b[49]
 	v.MaxByte1 = b[50]
-	v.AllCharsExist = b[51]
+	v.AllCharsExist = b[51] != 0
 	v.FontAscent = int16(get16(b[52:]))
 	v.FontDescent = int16(get16(b[54:]))
 	v.CharInfosLen = get32(b[56:])
@@ -2388,7 +2416,7 @@ type ListFontsWithInfoReply struct {
 	DrawDirection  byte
 	MinByte1       byte
 	MaxByte1       byte
-	AllCharsExist  byte
+	AllCharsExist  bool
 	FontAscent     int16
 	FontDescent    int16
 	RepliesHint    uint32
@@ -2412,7 +2440,7 @@ func (c *Conn) ListFontsWithInfoReply(cookie Cookie) (*ListFontsWithInfoReply, o
 	v.DrawDirection = b[48]
 	v.MinByte1 = b[49]
 	v.MaxByte1 = b[50]
-	v.AllCharsExist = b[51]
+	v.AllCharsExist = b[51] != 0
 	v.FontAscent = int16(get16(b[52:]))
 	v.FontDescent = int16(get16(b[54:]))
 	v.RepliesHint = get32(b[56:])
@@ -2653,11 +2681,15 @@ func (c *Conn) FreeGC(Gc Id) {
 	c.sendRequest(b)
 }
 
-func (c *Conn) ClearArea(Exposures byte, Window Id, X int16, Y int16, Width uint16, Height uint16) {
+func (c *Conn) ClearArea(Exposures bool, Window Id, X int16, Y int16, Width uint16, Height uint16) {
 	b := c.scratch[0:16]
 	put16(b[2:], 4)
 	b[0] = 61
-	b[1] = Exposures
+	if Exposures {
+		b[1] = 1
+	} else {
+		b[1] = 0
+	}
 	put32(b[4:], uint32(Window))
 	put16(b[8:], uint16(X))
 	put16(b[10:], uint16(Y))
@@ -3121,18 +3153,22 @@ func (c *Conn) AllocNamedColorReply(cookie Cookie) (*AllocNamedColorReply, os.Er
 	return v, nil
 }
 
-func (c *Conn) AllocColorCellsRequest(Contiguous byte, Cmap Id, Colors uint16, Planes uint16) Cookie {
+func (c *Conn) AllocColorCellsRequest(Contiguous bool, Cmap Id, Colors uint16, Planes uint16) Cookie {
 	b := c.scratch[0:12]
 	put16(b[2:], 3)
 	b[0] = 86
-	b[1] = Contiguous
+	if Contiguous {
+		b[1] = 1
+	} else {
+		b[1] = 0
+	}
 	put32(b[4:], uint32(Cmap))
 	put16(b[8:], Colors)
 	put16(b[10:], Planes)
 	return c.sendRequest(b)
 }
 
-func (c *Conn) AllocColorCells(Contiguous byte, Cmap Id, Colors uint16, Planes uint16) (*AllocColorCellsReply, os.Error) {
+func (c *Conn) AllocColorCells(Contiguous bool, Cmap Id, Colors uint16, Planes uint16) (*AllocColorCellsReply, os.Error) {
 	return c.AllocColorCellsReply(c.AllocColorCellsRequest(Contiguous, Cmap, Colors, Planes))
 }
 
@@ -3166,11 +3202,15 @@ func (c *Conn) AllocColorCellsReply(cookie Cookie) (*AllocColorCellsReply, os.Er
 	return v, nil
 }
 
-func (c *Conn) AllocColorPlanesRequest(Contiguous byte, Cmap Id, Colors uint16, Reds uint16, Greens uint16, Blues uint16) Cookie {
+func (c *Conn) AllocColorPlanesRequest(Contiguous bool, Cmap Id, Colors uint16, Reds uint16, Greens uint16, Blues uint16) Cookie {
 	b := c.scratch[0:16]
 	put16(b[2:], 4)
 	b[0] = 87
-	b[1] = Contiguous
+	if Contiguous {
+		b[1] = 1
+	} else {
+		b[1] = 0
+	}
 	put32(b[4:], uint32(Cmap))
 	put16(b[8:], Colors)
 	put16(b[10:], Reds)
@@ -3179,7 +3219,7 @@ func (c *Conn) AllocColorPlanesRequest(Contiguous byte, Cmap Id, Colors uint16, 
 	return c.sendRequest(b)
 }
 
-func (c *Conn) AllocColorPlanes(Contiguous byte, Cmap Id, Colors uint16, Reds uint16, Greens uint16, Blues uint16) (*AllocColorPlanesReply, os.Error) {
+func (c *Conn) AllocColorPlanes(Contiguous bool, Cmap Id, Colors uint16, Reds uint16, Greens uint16, Blues uint16) (*AllocColorPlanesReply, os.Error) {
 	return c.AllocColorPlanesReply(c.AllocColorPlanesRequest(Contiguous, Cmap, Colors, Reds, Greens, Blues))
 }
 
@@ -3504,7 +3544,7 @@ func (c *Conn) QueryExtension(Name string) (*QueryExtensionReply, os.Error) {
 }
 
 type QueryExtensionReply struct {
-	Present     byte
+	Present     bool
 	MajorOpcode byte
 	FirstEvent  byte
 	FirstError  byte
@@ -3516,7 +3556,7 @@ func (c *Conn) QueryExtensionReply(cookie Cookie) (*QueryExtensionReply, os.Erro
 		return nil, error
 	}
 	v := new(QueryExtensionReply)
-	v.Present = b[8]
+	v.Present = b[8] != 0
 	v.MajorOpcode = b[9]
 	v.FirstEvent = b[10]
 	v.FirstError = b[11]
@@ -3681,15 +3721,23 @@ func (c *Conn) Bell(Percent int8) {
 	c.sendRequest(b)
 }
 
-func (c *Conn) ChangePointerControl(AccelerationNumerator int16, AccelerationDenominator int16, Threshold int16, DoAcceleration byte, DoThreshold byte) {
+func (c *Conn) ChangePointerControl(AccelerationNumerator int16, AccelerationDenominator int16, Threshold int16, DoAcceleration bool, DoThreshold bool) {
 	b := c.scratch[0:12]
 	put16(b[2:], 3)
 	b[0] = 105
 	put16(b[4:], uint16(AccelerationNumerator))
 	put16(b[6:], uint16(AccelerationDenominator))
 	put16(b[8:], uint16(Threshold))
-	b[10] = DoAcceleration
-	b[11] = DoThreshold
+	if DoAcceleration {
+		b[10] = 1
+	} else {
+		b[10] = 0
+	}
+	if DoThreshold {
+		b[11] = 1
+	} else {
+		b[11] = 0
+	}
 	c.sendRequest(b)
 }
 

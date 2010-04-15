@@ -151,7 +151,9 @@ def go_complex(self, fieldlist=None):
 
 def go_get(dst, ofs, typename, typesize):
 	dst = "v." + dst
-	if typesize == 1:
+	if typename == 'bool':
+		go('%s = b[%s] != 0', dst, ofs)
+	elif typesize == 1:
 		if typename == 'byte':
 			go('%s = b[%s]', dst, ofs)
 		else:
@@ -225,7 +227,9 @@ def structsize(fieldlist):
 	return fixedtotal
 
 def go_put(src, ofs, typename, typesize):
-	if typesize == 1:
+	if typename == 'bool':
+		go('if %s { b[%s] = 1 } else { b[%s] = 0 }', src, ofs, ofs)
+	elif typesize == 1:
 		if typename == 'byte':
 			go('b[%s] = %s', ofs, src)
 		else:
@@ -682,7 +686,7 @@ xtypes.tint32 = SimpleType(('int32',), 4)
 xtypes.tchar =  SimpleType(('char',), 1)
 xtypes.tfloat = SimpleType(('float',), 4)
 xtypes.tdouble = SimpleType(('double',), 8)
-#tbool = SimpleType(('bool',), 1)
+tbool = SimpleType(('bool',), 1)
 tid = SimpleType(('Id',), 4)
 
 module = Module(args[0], output)
@@ -694,7 +698,7 @@ module.add_type('INT8', '', ('int8',), xtypes.tint8)
 module.add_type('INT16', '', ('int16',), xtypes.tint16)
 module.add_type('INT32', '', ('int32',), xtypes.tint32)
 module.add_type('BYTE', '', ('byte',), xtypes.tcard8)
-module.add_type('BOOL', '', ('byte',), xtypes.tcard8)
+module.add_type('BOOL', '', ('bool',), tbool)
 module.add_type('char', '', ('byte',), xtypes.tchar)
 module.add_type('float', '', ('float',), xtypes.tfloat)
 module.add_type('double', '', ('double',), xtypes.tdouble)

@@ -28,7 +28,7 @@ func main() {
 	c.CreateGC(gc, win, 0, nil)
 	c.MapWindow(win)
 
-	atom, _ := c.InternAtom(0, "HELLO")
+	atom, _ := c.InternAtom(false, "HELLO")
 	fmt.Printf("atom = %d\n", atom.Atom)
 
 	points := make([]xgb.Point, 2)
