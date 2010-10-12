@@ -3863,6 +3863,7 @@ func getHost(b []byte, v *Host) int {
 	v.Address = make([]byte, int(v.AddressLen))
 	copy(v.Address[0:len(v.Address)], b[offset:])
 	offset += len(v.Address) * 1
+	offset = pad(offset)
 	return offset
 }
 

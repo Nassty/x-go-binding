@@ -205,6 +205,14 @@ def go_complex_reader_help(self, fieldlist):
 			if field.type.size <= 4 and field.type.size != None:
 				go_get_list(fieldname, "offset", fieldtype, field.type.size, "len(v."+fieldname+")")
 				go('offset += len(v.%s) * %d', fieldname, field.type.size)
+				# NOTE(nigeltao): hard-coding a check for 'Host' is a hack. The X11
+				# spec at ftp://ftp.x.org/pub/X11R7.0/doc/PDF/proto.pdf says that
+				# ListHosts (opcode 110, page 148) is marked "n always a multiple of 4"
+				# but ListExtensions (opcode 99, page 145) is not similarly marked.
+				# The proper fix would be some function of the XML wire protocol
+				# descriptions but it's not clear to me what that function should be.
+				if self.c_type == 'Host':
+					go('offset = pad(offset)')
 			else:
 				go('for i := 0; i < %s; i++ {', lenstr)
 				go('	offset += get%s(b[offset:], &v.%s[i])', fieldtype, fieldname)

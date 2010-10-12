@@ -379,7 +379,7 @@ type ClientMessageData struct {
 }
 
 func getClientMessageData(b []byte, v *ClientMessageData) int {
-	copy(&v.Data8, b)
+	copy(v.Data8[:], b)
 	for i := 0; i < 10; i++ {
 		v.Data16[i] = get16(b[i*2:])
 	}
