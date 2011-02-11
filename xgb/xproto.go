@@ -1181,6 +1181,8 @@ const (
 	GravityStatic    = 10
 )
 
+const OpcodeCreateWindow = 1
+
 func (c *Conn) CreateWindow(Depth byte, Wid Id, Parent Id, X int16, Y int16, Width uint16, Height uint16, BorderWidth uint16, Class uint16, Visual Id, ValueMask uint32, ValueList []uint32) {
 	b := c.scratch[0:32]
 	n := 32
@@ -1202,6 +1204,8 @@ func (c *Conn) CreateWindow(Depth byte, Wid Id, Parent Id, X int16, Y int16, Wid
 	c.sendUInt32List(ValueList[0:popCount(int(ValueMask))])
 }
 
+const OpcodeChangeWindowAttributes = 2
+
 func (c *Conn) ChangeWindowAttributes(Window Id, ValueMask uint32, ValueList []uint32) {
 	b := c.scratch[0:12]
 	n := 12
@@ -1219,6 +1223,8 @@ const (
 	MapStateUnviewable = 1
 	MapStateViewable   = 2
 )
+
+const OpcodeGetWindowAttributes = 3
 
 func (c *Conn) GetWindowAttributesRequest(Window Id) Cookie {
 	b := c.scratch[0:8]
@@ -1274,6 +1280,8 @@ func (c *Conn) GetWindowAttributesReply(cookie Cookie) (*GetWindowAttributesRepl
 	return v, nil
 }
 
+const OpcodeDestroyWindow = 4
+
 func (c *Conn) DestroyWindow(Window Id) {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -1281,6 +1289,8 @@ func (c *Conn) DestroyWindow(Window Id) {
 	put32(b[4:], uint32(Window))
 	c.sendRequest(b)
 }
+
+const OpcodeDestroySubwindows = 5
 
 func (c *Conn) DestroySubwindows(Window Id) {
 	b := c.scratch[0:8]
@@ -1295,6 +1305,8 @@ const (
 	SetModeDelete = 1
 )
 
+const OpcodeChangeSaveSet = 6
+
 func (c *Conn) ChangeSaveSet(Mode byte, Window Id) {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -1303,6 +1315,8 @@ func (c *Conn) ChangeSaveSet(Mode byte, Window Id) {
 	put32(b[4:], uint32(Window))
 	c.sendRequest(b)
 }
+
+const OpcodeReparentWindow = 7
 
 func (c *Conn) ReparentWindow(Window Id, Parent Id, X int16, Y int16) {
 	b := c.scratch[0:16]
@@ -1315,6 +1329,8 @@ func (c *Conn) ReparentWindow(Window Id, Parent Id, X int16, Y int16) {
 	c.sendRequest(b)
 }
 
+const OpcodeMapWindow = 8
+
 func (c *Conn) MapWindow(Window Id) {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -1322,6 +1338,8 @@ func (c *Conn) MapWindow(Window Id) {
 	put32(b[4:], uint32(Window))
 	c.sendRequest(b)
 }
+
+const OpcodeMapSubwindows = 9
 
 func (c *Conn) MapSubwindows(Window Id) {
 	b := c.scratch[0:8]
@@ -1331,6 +1349,8 @@ func (c *Conn) MapSubwindows(Window Id) {
 	c.sendRequest(b)
 }
 
+const OpcodeUnmapWindow = 10
+
 func (c *Conn) UnmapWindow(Window Id) {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -1338,6 +1358,8 @@ func (c *Conn) UnmapWindow(Window Id) {
 	put32(b[4:], uint32(Window))
 	c.sendRequest(b)
 }
+
+const OpcodeUnmapSubwindows = 11
 
 func (c *Conn) UnmapSubwindows(Window Id) {
 	b := c.scratch[0:8]
@@ -1365,6 +1387,8 @@ const (
 	StackModeOpposite = 4
 )
 
+const OpcodeConfigureWindow = 12
+
 func (c *Conn) ConfigureWindow(Window Id, ValueMask uint16, ValueList []uint32) {
 	b := c.scratch[0:12]
 	n := 12
@@ -1382,6 +1406,8 @@ const (
 	CirculateLowerHighest = 1
 )
 
+const OpcodeCirculateWindow = 13
+
 func (c *Conn) CirculateWindow(Direction byte, Window Id) {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -1390,6 +1416,8 @@ func (c *Conn) CirculateWindow(Direction byte, Window Id) {
 	put32(b[4:], uint32(Window))
 	c.sendRequest(b)
 }
+
+const OpcodeGetGeometry = 14
 
 func (c *Conn) GetGeometryRequest(Drawable Id) Cookie {
 	b := c.scratch[0:8]
@@ -1429,6 +1457,8 @@ func (c *Conn) GetGeometryReply(cookie Cookie) (*GetGeometryReply, os.Error) {
 	return v, nil
 }
 
+const OpcodeQueryTree = 15
+
 func (c *Conn) QueryTreeRequest(Window Id) Cookie {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -1466,6 +1496,8 @@ func (c *Conn) QueryTreeReply(cookie Cookie) (*QueryTreeReply, os.Error) {
 	return v, nil
 }
 
+const OpcodeInternAtom = 16
+
 func (c *Conn) InternAtomRequest(OnlyIfExists bool, Name string) Cookie {
 	b := c.scratch[0:8]
 	n := 8
@@ -1500,6 +1532,8 @@ func (c *Conn) InternAtomReply(cookie Cookie) (*InternAtomReply, os.Error) {
 	v.Atom = Id(get32(b[8:]))
 	return v, nil
 }
+
+const OpcodeGetAtomName = 17
 
 func (c *Conn) GetAtomNameRequest(Atom Id) Cookie {
 	b := c.scratch[0:8]
@@ -1538,6 +1572,8 @@ const (
 	PropModeAppend  = 2
 )
 
+const OpcodeChangeProperty = 18
+
 func (c *Conn) ChangeProperty(Mode byte, Window Id, Property Id, Type Id, Format byte, Data []byte) {
 	b := c.scratch[0:24]
 	n := 24
@@ -1554,6 +1590,8 @@ func (c *Conn) ChangeProperty(Mode byte, Window Id, Property Id, Type Id, Format
 	c.sendBytes(Data[0:((len(Data) * int(Format)) / 8)])
 }
 
+const OpcodeDeleteProperty = 19
+
 func (c *Conn) DeleteProperty(Window Id, Property Id) {
 	b := c.scratch[0:12]
 	put16(b[2:], 3)
@@ -1566,6 +1604,8 @@ func (c *Conn) DeleteProperty(Window Id, Property Id) {
 const (
 	GetPropertyTypeAny = 0
 )
+
+const OpcodeGetProperty = 20
 
 func (c *Conn) GetPropertyRequest(Delete bool, Window Id, Property Id, Type Id, LongOffset uint32, LongLength uint32) Cookie {
 	b := c.scratch[0:24]
@@ -1613,6 +1653,8 @@ func (c *Conn) GetPropertyReply(cookie Cookie) (*GetPropertyReply, os.Error) {
 	return v, nil
 }
 
+const OpcodeListProperties = 21
+
 func (c *Conn) ListPropertiesRequest(Window Id) Cookie {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -1646,6 +1688,8 @@ func (c *Conn) ListPropertiesReply(cookie Cookie) (*ListPropertiesReply, os.Erro
 	return v, nil
 }
 
+const OpcodeSetSelectionOwner = 22
+
 func (c *Conn) SetSelectionOwner(Owner Id, Selection Id, Time Timestamp) {
 	b := c.scratch[0:16]
 	put16(b[2:], 4)
@@ -1655,6 +1699,8 @@ func (c *Conn) SetSelectionOwner(Owner Id, Selection Id, Time Timestamp) {
 	put32(b[12:], uint32(Time))
 	c.sendRequest(b)
 }
+
+const OpcodeGetSelectionOwner = 23
 
 func (c *Conn) GetSelectionOwnerRequest(Selection Id) Cookie {
 	b := c.scratch[0:8]
@@ -1682,6 +1728,8 @@ func (c *Conn) GetSelectionOwnerReply(cookie Cookie) (*GetSelectionOwnerReply, o
 	return v, nil
 }
 
+const OpcodeConvertSelection = 24
+
 func (c *Conn) ConvertSelection(Requestor Id, Selection Id, Target Id, Property Id, Time Timestamp) {
 	b := c.scratch[0:24]
 	put16(b[2:], 6)
@@ -1698,6 +1746,8 @@ const (
 	SendEventDestPointerWindow = 0
 	SendEventDestItemFocus     = 1
 )
+
+const OpcodeSendEvent = 25
 
 func (c *Conn) SendEvent(Propagate bool, Destination Id, EventMask uint32, Event []byte) {
 	b := make([]byte, 44)
@@ -1730,6 +1780,8 @@ const (
 const (
 	CursorNone = 0
 )
+
+const OpcodeGrabPointer = 26
 
 func (c *Conn) GrabPointerRequest(OwnerEvents bool, GrabWindow Id, EventMask uint16, PointerMode byte, KeyboardMode byte, ConfineTo Id, Cursor Id, Time Timestamp) Cookie {
 	b := c.scratch[0:24]
@@ -1768,6 +1820,8 @@ func (c *Conn) GrabPointerReply(cookie Cookie) (*GrabPointerReply, os.Error) {
 	return v, nil
 }
 
+const OpcodeUngrabPointer = 27
+
 func (c *Conn) UngrabPointer(Time Timestamp) {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -1784,6 +1838,8 @@ const (
 	ButtonIndex4   = 4
 	ButtonIndex5   = 5
 )
+
+const OpcodeGrabButton = 28
 
 func (c *Conn) GrabButton(OwnerEvents bool, GrabWindow Id, EventMask uint16, PointerMode byte, KeyboardMode byte, ConfineTo Id, Cursor Id, Button byte, Modifiers uint16) {
 	b := c.scratch[0:24]
@@ -1805,6 +1861,8 @@ func (c *Conn) GrabButton(OwnerEvents bool, GrabWindow Id, EventMask uint16, Poi
 	c.sendRequest(b)
 }
 
+const OpcodeUngrabButton = 29
+
 func (c *Conn) UngrabButton(Button byte, GrabWindow Id, Modifiers uint16) {
 	b := c.scratch[0:12]
 	put16(b[2:], 3)
@@ -1815,6 +1873,8 @@ func (c *Conn) UngrabButton(Button byte, GrabWindow Id, Modifiers uint16) {
 	c.sendRequest(b)
 }
 
+const OpcodeChangeActivePointerGrab = 30
+
 func (c *Conn) ChangeActivePointerGrab(Cursor Id, Time Timestamp, EventMask uint16) {
 	b := c.scratch[0:16]
 	put16(b[2:], 4)
@@ -1824,6 +1884,8 @@ func (c *Conn) ChangeActivePointerGrab(Cursor Id, Time Timestamp, EventMask uint
 	put16(b[12:], EventMask)
 	c.sendRequest(b)
 }
+
+const OpcodeGrabKeyboard = 31
 
 func (c *Conn) GrabKeyboardRequest(OwnerEvents bool, GrabWindow Id, Time Timestamp, PointerMode byte, KeyboardMode byte) Cookie {
 	b := c.scratch[0:16]
@@ -1859,6 +1921,8 @@ func (c *Conn) GrabKeyboardReply(cookie Cookie) (*GrabKeyboardReply, os.Error) {
 	return v, nil
 }
 
+const OpcodeUngrabKeyboard = 32
+
 func (c *Conn) UngrabKeyboard(Time Timestamp) {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -1870,6 +1934,8 @@ func (c *Conn) UngrabKeyboard(Time Timestamp) {
 const (
 	GrabAny = 0
 )
+
+const OpcodeGrabKey = 33
 
 func (c *Conn) GrabKey(OwnerEvents bool, GrabWindow Id, Modifiers uint16, Key byte, PointerMode byte, KeyboardMode byte) {
 	b := c.scratch[0:16]
@@ -1887,6 +1953,8 @@ func (c *Conn) GrabKey(OwnerEvents bool, GrabWindow Id, Modifiers uint16, Key by
 	b[12] = KeyboardMode
 	c.sendRequest(b)
 }
+
+const OpcodeUngrabKey = 34
 
 func (c *Conn) UngrabKey(Key byte, GrabWindow Id, Modifiers uint16) {
 	b := c.scratch[0:12]
@@ -1909,6 +1977,8 @@ const (
 	AllowSyncBoth       = 7
 )
 
+const OpcodeAllowEvents = 35
+
 func (c *Conn) AllowEvents(Mode byte, Time Timestamp) {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -1918,6 +1988,8 @@ func (c *Conn) AllowEvents(Mode byte, Time Timestamp) {
 	c.sendRequest(b)
 }
 
+const OpcodeGrabServer = 36
+
 func (c *Conn) GrabServer() {
 	b := c.scratch[0:4]
 	put16(b[2:], 1)
@@ -1925,12 +1997,16 @@ func (c *Conn) GrabServer() {
 	c.sendRequest(b)
 }
 
+const OpcodeUngrabServer = 37
+
 func (c *Conn) UngrabServer() {
 	b := c.scratch[0:4]
 	put16(b[2:], 1)
 	b[0] = 37
 	c.sendRequest(b)
 }
+
+const OpcodeQueryPointer = 38
 
 func (c *Conn) QueryPointerRequest(Window Id) Cookie {
 	b := c.scratch[0:8]
@@ -1996,6 +2072,8 @@ func (c *Conn) sendTimecoordList(list []Timecoord, count int) {
 	c.sendBytes(b0)
 }
 
+const OpcodeGetMotionEvents = 39
+
 func (c *Conn) GetMotionEventsRequest(Window Id, Start Timestamp, Stop Timestamp) Cookie {
 	b := c.scratch[0:16]
 	put16(b[2:], 4)
@@ -2029,6 +2107,8 @@ func (c *Conn) GetMotionEventsReply(cookie Cookie) (*GetMotionEventsReply, os.Er
 	}
 	return v, nil
 }
+
+const OpcodeTranslateCoordinates = 40
 
 func (c *Conn) TranslateCoordinatesRequest(SrcWindow Id, DstWindow Id, SrcX int16, SrcY int16) Cookie {
 	b := c.scratch[0:16]
@@ -2065,6 +2145,8 @@ func (c *Conn) TranslateCoordinatesReply(cookie Cookie) (*TranslateCoordinatesRe
 	return v, nil
 }
 
+const OpcodeWarpPointer = 41
+
 func (c *Conn) WarpPointer(SrcWindow Id, DstWindow Id, SrcX int16, SrcY int16, SrcWidth uint16, SrcHeight uint16, DstX int16, DstY int16) {
 	b := c.scratch[0:24]
 	put16(b[2:], 6)
@@ -2087,6 +2169,8 @@ const (
 	InputFocusFollowKeyboard = 3
 )
 
+const OpcodeSetInputFocus = 42
+
 func (c *Conn) SetInputFocus(RevertTo byte, Focus Id, Time Timestamp) {
 	b := c.scratch[0:12]
 	put16(b[2:], 3)
@@ -2096,6 +2180,8 @@ func (c *Conn) SetInputFocus(RevertTo byte, Focus Id, Time Timestamp) {
 	put32(b[8:], uint32(Time))
 	c.sendRequest(b)
 }
+
+const OpcodeGetInputFocus = 43
 
 func (c *Conn) GetInputFocusRequest() Cookie {
 	b := c.scratch[0:4]
@@ -2124,6 +2210,8 @@ func (c *Conn) GetInputFocusReply(cookie Cookie) (*GetInputFocusReply, os.Error)
 	return v, nil
 }
 
+const OpcodeQueryKeymap = 44
+
 func (c *Conn) QueryKeymapRequest() Cookie {
 	b := c.scratch[0:4]
 	put16(b[2:], 1)
@@ -2149,6 +2237,8 @@ func (c *Conn) QueryKeymapReply(cookie Cookie) (*QueryKeymapReply, os.Error) {
 	return v, nil
 }
 
+const OpcodeOpenFont = 45
+
 func (c *Conn) OpenFont(Fid Id, Name string) {
 	b := c.scratch[0:12]
 	n := 12
@@ -2160,6 +2250,8 @@ func (c *Conn) OpenFont(Fid Id, Name string) {
 	c.sendRequest(b)
 	c.sendString(Name)
 }
+
+const OpcodeCloseFont = 46
 
 func (c *Conn) CloseFont(Font Id) {
 	b := c.scratch[0:8]
@@ -2228,6 +2320,8 @@ func (c *Conn) sendCharinfoList(list []Charinfo, count int) {
 	c.sendBytes(b0)
 }
 
+const OpcodeQueryFont = 47
+
 func (c *Conn) QueryFontRequest(Font Id) Cookie {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -2290,6 +2384,8 @@ func (c *Conn) QueryFontReply(cookie Cookie) (*QueryFontReply, os.Error) {
 	return v, nil
 }
 
+const OpcodeQueryTextExtents = 48
+
 func (c *Conn) QueryTextExtentsRequest(Font Id, String []Char2b) Cookie {
 	b := c.scratch[0:8]
 	n := 8
@@ -2351,6 +2447,8 @@ func getStr(b []byte, v *Str) int {
 
 // omitting variable length sendStr
 
+const OpcodeListFonts = 49
+
 func (c *Conn) ListFontsRequest(MaxNames uint16, Pattern []byte) Cookie {
 	b := c.scratch[0:8]
 	n := 8
@@ -2387,6 +2485,8 @@ func (c *Conn) ListFontsReply(cookie Cookie) (*ListFontsReply, os.Error) {
 	}
 	return v, nil
 }
+
+const OpcodeListFontsWithInfo = 50
 
 func (c *Conn) ListFontsWithInfoRequest(MaxNames uint16, Pattern []byte) Cookie {
 	b := c.scratch[0:8]
@@ -2456,6 +2556,8 @@ func (c *Conn) ListFontsWithInfoReply(cookie Cookie) (*ListFontsWithInfoReply, o
 	return v, nil
 }
 
+const OpcodeSetFontPath = 51
+
 func (c *Conn) SetFontPath(FontQty uint16, Path []byte) {
 	b := c.scratch[0:8]
 	n := 8
@@ -2466,6 +2568,8 @@ func (c *Conn) SetFontPath(FontQty uint16, Path []byte) {
 	c.sendRequest(b)
 	c.sendBytes(Path[0:len(Path)])
 }
+
+const OpcodeGetFontPath = 52
 
 func (c *Conn) GetFontPathRequest() Cookie {
 	b := c.scratch[0:4]
@@ -2498,6 +2602,8 @@ func (c *Conn) GetFontPathReply(cookie Cookie) (*GetFontPathReply, os.Error) {
 	return v, nil
 }
 
+const OpcodeCreatePixmap = 53
+
 func (c *Conn) CreatePixmap(Depth byte, Pid Id, Drawable Id, Width uint16, Height uint16) {
 	b := c.scratch[0:16]
 	put16(b[2:], 4)
@@ -2509,6 +2615,8 @@ func (c *Conn) CreatePixmap(Depth byte, Pid Id, Drawable Id, Width uint16, Heigh
 	put16(b[14:], Height)
 	c.sendRequest(b)
 }
+
+const OpcodeFreePixmap = 54
 
 func (c *Conn) FreePixmap(Pixmap Id) {
 	b := c.scratch[0:8]
@@ -2604,6 +2712,8 @@ const (
 	ArcModePieSlice = 1
 )
 
+const OpcodeCreateGC = 55
+
 func (c *Conn) CreateGC(Cid Id, Drawable Id, ValueMask uint32, ValueList []uint32) {
 	b := c.scratch[0:16]
 	n := 16
@@ -2617,6 +2727,8 @@ func (c *Conn) CreateGC(Cid Id, Drawable Id, ValueMask uint32, ValueList []uint3
 	c.sendUInt32List(ValueList[0:popCount(int(ValueMask))])
 }
 
+const OpcodeChangeGC = 56
+
 func (c *Conn) ChangeGC(Gc Id, ValueMask uint32, ValueList []uint32) {
 	b := c.scratch[0:12]
 	n := 12
@@ -2629,6 +2741,8 @@ func (c *Conn) ChangeGC(Gc Id, ValueMask uint32, ValueList []uint32) {
 	c.sendUInt32List(ValueList[0:popCount(int(ValueMask))])
 }
 
+const OpcodeCopyGC = 57
+
 func (c *Conn) CopyGC(SrcGc Id, DstGc Id, ValueMask uint32) {
 	b := c.scratch[0:16]
 	put16(b[2:], 4)
@@ -2638,6 +2752,8 @@ func (c *Conn) CopyGC(SrcGc Id, DstGc Id, ValueMask uint32) {
 	put32(b[12:], ValueMask)
 	c.sendRequest(b)
 }
+
+const OpcodeSetDashes = 58
 
 func (c *Conn) SetDashes(Gc Id, DashOffset uint16, Dashes []byte) {
 	b := c.scratch[0:12]
@@ -2659,6 +2775,8 @@ const (
 	ClipOrderingYXBanded = 3
 )
 
+const OpcodeSetClipRectangles = 59
+
 func (c *Conn) SetClipRectangles(Ordering byte, Gc Id, ClipXOrigin int16, ClipYOrigin int16, Rectangles []Rectangle) {
 	b := c.scratch[0:12]
 	n := 12
@@ -2673,6 +2791,8 @@ func (c *Conn) SetClipRectangles(Ordering byte, Gc Id, ClipXOrigin int16, ClipYO
 	c.sendRectangleList(Rectangles, len(Rectangles))
 }
 
+const OpcodeFreeGC = 60
+
 func (c *Conn) FreeGC(Gc Id) {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -2680,6 +2800,8 @@ func (c *Conn) FreeGC(Gc Id) {
 	put32(b[4:], uint32(Gc))
 	c.sendRequest(b)
 }
+
+const OpcodeClearArea = 61
 
 func (c *Conn) ClearArea(Exposures bool, Window Id, X int16, Y int16, Width uint16, Height uint16) {
 	b := c.scratch[0:16]
@@ -2698,6 +2820,8 @@ func (c *Conn) ClearArea(Exposures bool, Window Id, X int16, Y int16, Width uint
 	c.sendRequest(b)
 }
 
+const OpcodeCopyArea = 62
+
 func (c *Conn) CopyArea(SrcDrawable Id, DstDrawable Id, Gc Id, SrcX int16, SrcY int16, DstX int16, DstY int16, Width uint16, Height uint16) {
 	b := c.scratch[0:28]
 	put16(b[2:], 7)
@@ -2713,6 +2837,8 @@ func (c *Conn) CopyArea(SrcDrawable Id, DstDrawable Id, Gc Id, SrcX int16, SrcY 
 	put16(b[26:], Height)
 	c.sendRequest(b)
 }
+
+const OpcodeCopyPlane = 63
 
 func (c *Conn) CopyPlane(SrcDrawable Id, DstDrawable Id, Gc Id, SrcX int16, SrcY int16, DstX int16, DstY int16, Width uint16, Height uint16, BitPlane uint32) {
 	b := c.scratch[0:32]
@@ -2736,6 +2862,8 @@ const (
 	CoordModePrevious = 1
 )
 
+const OpcodePolyPoint = 64
+
 func (c *Conn) PolyPoint(CoordinateMode byte, Drawable Id, Gc Id, Points []Point) {
 	b := c.scratch[0:12]
 	n := 12
@@ -2748,6 +2876,8 @@ func (c *Conn) PolyPoint(CoordinateMode byte, Drawable Id, Gc Id, Points []Point
 	c.sendRequest(b)
 	c.sendPointList(Points, len(Points))
 }
+
+const OpcodePolyLine = 65
 
 func (c *Conn) PolyLine(CoordinateMode byte, Drawable Id, Gc Id, Points []Point) {
 	b := c.scratch[0:12]
@@ -2789,6 +2919,8 @@ func (c *Conn) sendSegmentList(list []Segment, count int) {
 	c.sendBytes(b0)
 }
 
+const OpcodePolySegment = 66
+
 func (c *Conn) PolySegment(Drawable Id, Gc Id, Segments []Segment) {
 	b := c.scratch[0:12]
 	n := 12
@@ -2801,6 +2933,8 @@ func (c *Conn) PolySegment(Drawable Id, Gc Id, Segments []Segment) {
 	c.sendSegmentList(Segments, len(Segments))
 }
 
+const OpcodePolyRectangle = 67
+
 func (c *Conn) PolyRectangle(Drawable Id, Gc Id, Rectangles []Rectangle) {
 	b := c.scratch[0:12]
 	n := 12
@@ -2812,6 +2946,8 @@ func (c *Conn) PolyRectangle(Drawable Id, Gc Id, Rectangles []Rectangle) {
 	c.sendRequest(b)
 	c.sendRectangleList(Rectangles, len(Rectangles))
 }
+
+const OpcodePolyArc = 68
 
 func (c *Conn) PolyArc(Drawable Id, Gc Id, Arcs []Arc) {
 	b := c.scratch[0:12]
@@ -2831,6 +2967,8 @@ const (
 	PolyShapeConvex    = 2
 )
 
+const OpcodeFillPoly = 69
+
 func (c *Conn) FillPoly(Drawable Id, Gc Id, Shape byte, CoordinateMode byte, Points []Point) {
 	b := c.scratch[0:16]
 	n := 16
@@ -2845,6 +2983,8 @@ func (c *Conn) FillPoly(Drawable Id, Gc Id, Shape byte, CoordinateMode byte, Poi
 	c.sendPointList(Points, len(Points))
 }
 
+const OpcodePolyFillRectangle = 70
+
 func (c *Conn) PolyFillRectangle(Drawable Id, Gc Id, Rectangles []Rectangle) {
 	b := c.scratch[0:12]
 	n := 12
@@ -2856,6 +2996,8 @@ func (c *Conn) PolyFillRectangle(Drawable Id, Gc Id, Rectangles []Rectangle) {
 	c.sendRequest(b)
 	c.sendRectangleList(Rectangles, len(Rectangles))
 }
+
+const OpcodePolyFillArc = 71
 
 func (c *Conn) PolyFillArc(Drawable Id, Gc Id, Arcs []Arc) {
 	b := c.scratch[0:12]
@@ -2875,6 +3017,8 @@ const (
 	ImageFormatZPixmap  = 2
 )
 
+const OpcodePutImage = 72
+
 func (c *Conn) PutImage(Format byte, Drawable Id, Gc Id, Width uint16, Height uint16, DstX int16, DstY int16, LeftPad byte, Depth byte, Data []byte) {
 	b := c.scratch[0:24]
 	n := 24
@@ -2893,6 +3037,8 @@ func (c *Conn) PutImage(Format byte, Drawable Id, Gc Id, Width uint16, Height ui
 	c.sendRequest(b)
 	c.sendBytes(Data[0:len(Data)])
 }
+
+const OpcodeGetImage = 73
 
 func (c *Conn) GetImageRequest(Format byte, Drawable Id, X int16, Y int16, Width uint16, Height uint16, PlaneMask uint32) Cookie {
 	b := c.scratch[0:20]
@@ -2935,6 +3081,8 @@ func (c *Conn) GetImageReply(cookie Cookie) (*GetImageReply, os.Error) {
 	return v, nil
 }
 
+const OpcodePolyText8 = 74
+
 func (c *Conn) PolyText8(Drawable Id, Gc Id, X int16, Y int16, Items []byte) {
 	b := c.scratch[0:16]
 	n := 16
@@ -2948,6 +3096,8 @@ func (c *Conn) PolyText8(Drawable Id, Gc Id, X int16, Y int16, Items []byte) {
 	c.sendRequest(b)
 	c.sendBytes(Items[0:len(Items)])
 }
+
+const OpcodePolyText16 = 75
 
 func (c *Conn) PolyText16(Drawable Id, Gc Id, X int16, Y int16, Items []byte) {
 	b := c.scratch[0:16]
@@ -2963,6 +3113,8 @@ func (c *Conn) PolyText16(Drawable Id, Gc Id, X int16, Y int16, Items []byte) {
 	c.sendBytes(Items[0:len(Items)])
 }
 
+const OpcodeImageText8 = 76
+
 func (c *Conn) ImageText8(Drawable Id, Gc Id, X int16, Y int16, String []byte) {
 	b := c.scratch[0:16]
 	n := 16
@@ -2977,6 +3129,8 @@ func (c *Conn) ImageText8(Drawable Id, Gc Id, X int16, Y int16, String []byte) {
 	c.sendRequest(b)
 	c.sendBytes(String[0:len(String)])
 }
+
+const OpcodeImageText16 = 77
 
 func (c *Conn) ImageText16(Drawable Id, Gc Id, X int16, Y int16, String []Char2b) {
 	b := c.scratch[0:16]
@@ -2998,6 +3152,8 @@ const (
 	ColormapAllocAll  = 1
 )
 
+const OpcodeCreateColormap = 78
+
 func (c *Conn) CreateColormap(Alloc byte, Mid Id, Window Id, Visual Id) {
 	b := c.scratch[0:16]
 	put16(b[2:], 4)
@@ -3009,6 +3165,8 @@ func (c *Conn) CreateColormap(Alloc byte, Mid Id, Window Id, Visual Id) {
 	c.sendRequest(b)
 }
 
+const OpcodeFreeColormap = 79
+
 func (c *Conn) FreeColormap(Cmap Id) {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -3016,6 +3174,8 @@ func (c *Conn) FreeColormap(Cmap Id) {
 	put32(b[4:], uint32(Cmap))
 	c.sendRequest(b)
 }
+
+const OpcodeCopyColormapAndFree = 80
 
 func (c *Conn) CopyColormapAndFree(Mid Id, SrcCmap Id) {
 	b := c.scratch[0:12]
@@ -3026,6 +3186,8 @@ func (c *Conn) CopyColormapAndFree(Mid Id, SrcCmap Id) {
 	c.sendRequest(b)
 }
 
+const OpcodeInstallColormap = 81
+
 func (c *Conn) InstallColormap(Cmap Id) {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -3034,6 +3196,8 @@ func (c *Conn) InstallColormap(Cmap Id) {
 	c.sendRequest(b)
 }
 
+const OpcodeUninstallColormap = 82
+
 func (c *Conn) UninstallColormap(Cmap Id) {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -3041,6 +3205,8 @@ func (c *Conn) UninstallColormap(Cmap Id) {
 	put32(b[4:], uint32(Cmap))
 	c.sendRequest(b)
 }
+
+const OpcodeListInstalledColormaps = 83
 
 func (c *Conn) ListInstalledColormapsRequest(Window Id) Cookie {
 	b := c.scratch[0:8]
@@ -3074,6 +3240,8 @@ func (c *Conn) ListInstalledColormapsReply(cookie Cookie) (*ListInstalledColorma
 	offset += len(v.Cmaps) * 4
 	return v, nil
 }
+
+const OpcodeAllocColor = 84
 
 func (c *Conn) AllocColorRequest(Cmap Id, Red uint16, Green uint16, Blue uint16) Cookie {
 	b := c.scratch[0:16]
@@ -3109,6 +3277,8 @@ func (c *Conn) AllocColorReply(cookie Cookie) (*AllocColorReply, os.Error) {
 	v.Pixel = get32(b[16:])
 	return v, nil
 }
+
+const OpcodeAllocNamedColor = 85
 
 func (c *Conn) AllocNamedColorRequest(Cmap Id, Name string) Cookie {
 	b := c.scratch[0:12]
@@ -3152,6 +3322,8 @@ func (c *Conn) AllocNamedColorReply(cookie Cookie) (*AllocNamedColorReply, os.Er
 	v.VisualBlue = get16(b[22:])
 	return v, nil
 }
+
+const OpcodeAllocColorCells = 86
 
 func (c *Conn) AllocColorCellsRequest(Contiguous bool, Cmap Id, Colors uint16, Planes uint16) Cookie {
 	b := c.scratch[0:12]
@@ -3202,6 +3374,8 @@ func (c *Conn) AllocColorCellsReply(cookie Cookie) (*AllocColorCellsReply, os.Er
 	return v, nil
 }
 
+const OpcodeAllocColorPlanes = 87
+
 func (c *Conn) AllocColorPlanesRequest(Contiguous bool, Cmap Id, Colors uint16, Reds uint16, Greens uint16, Blues uint16) Cookie {
 	b := c.scratch[0:16]
 	put16(b[2:], 4)
@@ -3249,6 +3423,8 @@ func (c *Conn) AllocColorPlanesReply(cookie Cookie) (*AllocColorPlanesReply, os.
 	offset += len(v.Pixels) * 4
 	return v, nil
 }
+
+const OpcodeFreeColors = 88
 
 func (c *Conn) FreeColors(Cmap Id, PlaneMask uint32, Pixels []uint32) {
 	b := c.scratch[0:12]
@@ -3298,6 +3474,8 @@ func (c *Conn) sendColoritemList(list []Coloritem, count int) {
 	c.sendBytes(b0)
 }
 
+const OpcodeStoreColors = 89
+
 func (c *Conn) StoreColors(Cmap Id, Items []Coloritem) {
 	b := c.scratch[0:8]
 	n := 8
@@ -3308,6 +3486,8 @@ func (c *Conn) StoreColors(Cmap Id, Items []Coloritem) {
 	c.sendRequest(b)
 	c.sendColoritemList(Items, len(Items))
 }
+
+const OpcodeStoreNamedColor = 90
 
 func (c *Conn) StoreNamedColor(Flags byte, Cmap Id, Pixel uint32, Name string) {
 	b := c.scratch[0:16]
@@ -3347,6 +3527,8 @@ func (c *Conn) sendRgbList(list []Rgb, count int) {
 	c.sendBytes(b0)
 }
 
+const OpcodeQueryColors = 91
+
 func (c *Conn) QueryColorsRequest(Cmap Id, Pixels []uint32) Cookie {
 	b := c.scratch[0:8]
 	n := 8
@@ -3382,6 +3564,8 @@ func (c *Conn) QueryColorsReply(cookie Cookie) (*QueryColorsReply, os.Error) {
 	}
 	return v, nil
 }
+
+const OpcodeLookupColor = 92
 
 func (c *Conn) LookupColorRequest(Cmap Id, Name string) Cookie {
 	b := c.scratch[0:12]
@@ -3428,6 +3612,8 @@ const (
 	PixmapNone = 0
 )
 
+const OpcodeCreateCursor = 93
+
 func (c *Conn) CreateCursor(Cid Id, Source Id, Mask Id, ForeRed uint16, ForeGreen uint16, ForeBlue uint16, BackRed uint16, BackGreen uint16, BackBlue uint16, X uint16, Y uint16) {
 	b := c.scratch[0:32]
 	put16(b[2:], 8)
@@ -3450,6 +3636,8 @@ const (
 	FontNone = 0
 )
 
+const OpcodeCreateGlyphCursor = 94
+
 func (c *Conn) CreateGlyphCursor(Cid Id, SourceFont Id, MaskFont Id, SourceChar uint16, MaskChar uint16, ForeRed uint16, ForeGreen uint16, ForeBlue uint16, BackRed uint16, BackGreen uint16, BackBlue uint16) {
 	b := c.scratch[0:32]
 	put16(b[2:], 8)
@@ -3468,6 +3656,8 @@ func (c *Conn) CreateGlyphCursor(Cid Id, SourceFont Id, MaskFont Id, SourceChar 
 	c.sendRequest(b)
 }
 
+const OpcodeFreeCursor = 95
+
 func (c *Conn) FreeCursor(Cursor Id) {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -3475,6 +3665,8 @@ func (c *Conn) FreeCursor(Cursor Id) {
 	put32(b[4:], uint32(Cursor))
 	c.sendRequest(b)
 }
+
+const OpcodeRecolorCursor = 96
 
 func (c *Conn) RecolorCursor(Cursor Id, ForeRed uint16, ForeGreen uint16, ForeBlue uint16, BackRed uint16, BackGreen uint16, BackBlue uint16) {
 	b := c.scratch[0:20]
@@ -3495,6 +3687,8 @@ const (
 	QueryShapeOfFastestTile    = 1
 	QueryShapeOfFastestStipple = 2
 )
+
+const OpcodeQueryBestSize = 97
 
 func (c *Conn) QueryBestSizeRequest(Class byte, Drawable Id, Width uint16, Height uint16) Cookie {
 	b := c.scratch[0:12]
@@ -3526,6 +3720,8 @@ func (c *Conn) QueryBestSizeReply(cookie Cookie) (*QueryBestSizeReply, os.Error)
 	v.Height = get16(b[10:])
 	return v, nil
 }
+
+const OpcodeQueryExtension = 98
 
 func (c *Conn) QueryExtensionRequest(Name string) Cookie {
 	b := c.scratch[0:8]
@@ -3563,6 +3759,8 @@ func (c *Conn) QueryExtensionReply(cookie Cookie) (*QueryExtensionReply, os.Erro
 	return v, nil
 }
 
+const OpcodeListExtensions = 99
+
 func (c *Conn) ListExtensionsRequest() Cookie {
 	b := c.scratch[0:4]
 	put16(b[2:], 1)
@@ -3594,6 +3792,8 @@ func (c *Conn) ListExtensionsReply(cookie Cookie) (*ListExtensionsReply, os.Erro
 	return v, nil
 }
 
+const OpcodeChangeKeyboardMapping = 100
+
 func (c *Conn) ChangeKeyboardMapping(KeycodeCount byte, FirstKeycode byte, KeysymsPerKeycode byte, Keysyms []Keysym) {
 	b := c.scratch[0:8]
 	n := 8
@@ -3606,6 +3806,8 @@ func (c *Conn) ChangeKeyboardMapping(KeycodeCount byte, FirstKeycode byte, Keysy
 	c.sendRequest(b)
 	c.sendKeysymList(Keysyms, (int(KeycodeCount) * int(KeysymsPerKeycode)))
 }
+
+const OpcodeGetKeyboardMapping = 101
 
 func (c *Conn) GetKeyboardMappingRequest(FirstKeycode byte, Count byte) Cookie {
 	b := c.scratch[0:8]
@@ -3665,6 +3867,8 @@ const (
 	AutoRepeatModeDefault = 2
 )
 
+const OpcodeChangeKeyboardControl = 102
+
 func (c *Conn) ChangeKeyboardControl(ValueMask uint32, ValueList []uint32) {
 	b := c.scratch[0:8]
 	n := 8
@@ -3675,6 +3879,8 @@ func (c *Conn) ChangeKeyboardControl(ValueMask uint32, ValueList []uint32) {
 	c.sendRequest(b)
 	c.sendUInt32List(ValueList[0:popCount(int(ValueMask))])
 }
+
+const OpcodeGetKeyboardControl = 103
 
 func (c *Conn) GetKeyboardControlRequest() Cookie {
 	b := c.scratch[0:4]
@@ -3713,6 +3919,8 @@ func (c *Conn) GetKeyboardControlReply(cookie Cookie) (*GetKeyboardControlReply,
 	return v, nil
 }
 
+const OpcodeBell = 104
+
 func (c *Conn) Bell(Percent int8) {
 	b := c.scratch[0:4]
 	put16(b[2:], 1)
@@ -3720,6 +3928,8 @@ func (c *Conn) Bell(Percent int8) {
 	b[1] = byte(Percent)
 	c.sendRequest(b)
 }
+
+const OpcodeChangePointerControl = 105
 
 func (c *Conn) ChangePointerControl(AccelerationNumerator int16, AccelerationDenominator int16, Threshold int16, DoAcceleration bool, DoThreshold bool) {
 	b := c.scratch[0:12]
@@ -3740,6 +3950,8 @@ func (c *Conn) ChangePointerControl(AccelerationNumerator int16, AccelerationDen
 	}
 	c.sendRequest(b)
 }
+
+const OpcodeGetPointerControl = 106
 
 func (c *Conn) GetPointerControlRequest() Cookie {
 	b := c.scratch[0:4]
@@ -3782,6 +3994,8 @@ const (
 	ExposuresDefault    = 2
 )
 
+const OpcodeSetScreenSaver = 107
+
 func (c *Conn) SetScreenSaver(Timeout int16, Interval int16, PreferBlanking byte, AllowExposures byte) {
 	b := c.scratch[0:12]
 	put16(b[2:], 3)
@@ -3792,6 +4006,8 @@ func (c *Conn) SetScreenSaver(Timeout int16, Interval int16, PreferBlanking byte
 	b[9] = AllowExposures
 	c.sendRequest(b)
 }
+
+const OpcodeGetScreenSaver = 108
 
 func (c *Conn) GetScreenSaverRequest() Cookie {
 	b := c.scratch[0:4]
@@ -3837,6 +4053,8 @@ const (
 	FamilyInternet6         = 6
 )
 
+const OpcodeChangeHosts = 109
+
 func (c *Conn) ChangeHosts(Mode byte, Family byte, Address []byte) {
 	b := c.scratch[0:8]
 	n := 8
@@ -3868,6 +4086,8 @@ func getHost(b []byte, v *Host) int {
 }
 
 // omitting variable length sendHost
+
+const OpcodeListHosts = 110
 
 func (c *Conn) ListHostsRequest() Cookie {
 	b := c.scratch[0:4]
@@ -3907,6 +4127,8 @@ const (
 	AccessControlEnable  = 1
 )
 
+const OpcodeSetAccessControl = 111
+
 func (c *Conn) SetAccessControl(Mode byte) {
 	b := c.scratch[0:4]
 	put16(b[2:], 1)
@@ -3921,6 +4143,8 @@ const (
 	CloseDownRetainTemporary = 2
 )
 
+const OpcodeSetCloseDownMode = 112
+
 func (c *Conn) SetCloseDownMode(Mode byte) {
 	b := c.scratch[0:4]
 	put16(b[2:], 1)
@@ -3933,6 +4157,8 @@ const (
 	KillAllTemporary = 0
 )
 
+const OpcodeKillClient = 113
+
 func (c *Conn) KillClient(Resource uint32) {
 	b := c.scratch[0:8]
 	put16(b[2:], 2)
@@ -3940,6 +4166,8 @@ func (c *Conn) KillClient(Resource uint32) {
 	put32(b[4:], Resource)
 	c.sendRequest(b)
 }
+
+const OpcodeRotateProperties = 114
 
 func (c *Conn) RotateProperties(Window Id, Delta int16, Atoms []Id) {
 	b := c.scratch[0:12]
@@ -3959,6 +4187,8 @@ const (
 	ScreenSaverActive = 1
 )
 
+const OpcodeForceScreenSaver = 115
+
 func (c *Conn) ForceScreenSaver(Mode byte) {
 	b := c.scratch[0:4]
 	put16(b[2:], 1)
@@ -3972,6 +4202,8 @@ const (
 	MappingStatusBusy    = 1
 	MappingStatusFailure = 2
 )
+
+const OpcodeSetPointerMapping = 116
 
 func (c *Conn) SetPointerMappingRequest(Map []byte) Cookie {
 	b := c.scratch[0:4]
@@ -4002,6 +4234,8 @@ func (c *Conn) SetPointerMappingReply(cookie Cookie) (*SetPointerMappingReply, o
 	v.Status = b[1]
 	return v, nil
 }
+
+const OpcodeGetPointerMapping = 117
 
 func (c *Conn) GetPointerMappingRequest() Cookie {
 	b := c.scratch[0:4]
@@ -4044,6 +4278,8 @@ const (
 	MapIndex5       = 7
 )
 
+const OpcodeSetModifierMapping = 118
+
 func (c *Conn) SetModifierMappingRequest(KeycodesPerModifier byte, Keycodes []byte) Cookie {
 	b := c.scratch[0:4]
 	n := 4
@@ -4074,6 +4310,8 @@ func (c *Conn) SetModifierMappingReply(cookie Cookie) (*SetModifierMappingReply,
 	return v, nil
 }
 
+const OpcodeGetModifierMapping = 119
+
 func (c *Conn) GetModifierMappingRequest() Cookie {
 	b := c.scratch[0:4]
 	put16(b[2:], 1)
@@ -4103,6 +4341,8 @@ func (c *Conn) GetModifierMappingReply(cookie Cookie) (*GetModifierMappingReply,
 	offset += len(v.Keycodes) * 1
 	return v, nil
 }
+
+const OpcodeNoOperation = 127
 
 func (c *Conn) NoOperation() {
 	b := c.scratch[0:4]

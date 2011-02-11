@@ -305,6 +305,8 @@ def go_complex_writer(self, name, void):
 		if field.wire and not field.auto:
 			# We need to set the field up in the structure
 			wire_fields.append(field)
+
+	go('const Opcode%s = %s', func_name, self.opcode)
 	
 	if void:
 		go('func (c *Conn) %s(', func_name)
