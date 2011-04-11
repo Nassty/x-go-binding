@@ -69,7 +69,7 @@ func readAuthority(hostname, display string) (name string, data []byte, err os.E
 		fname = home + "/.Xauthority"
 	}
 
-	r, err := os.Open(fname, os.O_RDONLY, 0444)
+	r, err := os.Open(fname)
 	if err != nil {
 		return "", nil, err
 	}

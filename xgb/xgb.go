@@ -447,14 +447,14 @@ func connect(display string) (*Conn, os.Error) {
 
 	// Connect to server
 	if len(socket) != 0 {
-		c.conn, err = net.Dial("unix", "", socket+":"+c.display)
+		c.conn, err = net.Dial("unix", socket+":"+c.display)
 	} else if len(c.host) != 0 {
 		if protocol == "" {
 			protocol = "tcp"
 		}
-		c.conn, err = net.Dial(protocol, "", c.host+":"+strconv.Uitoa(6000+dispnum))
+		c.conn, err = net.Dial(protocol, c.host+":"+strconv.Uitoa(6000+dispnum))
 	} else {
-		c.conn, err = net.Dial("unix", "", "/tmp/.X11-unix/X"+c.display)
+		c.conn, err = net.Dial("unix", "/tmp/.X11-unix/X"+c.display)
 	}
 
 	if err != nil {
