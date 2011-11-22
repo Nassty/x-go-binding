@@ -367,7 +367,7 @@ def go_complex_writer(self, name, void):
 	if not void:
 		args = go_complex_writer_arguments_names(param_fields)
 		go('func (c *Conn) %s(', func_name)
-		go_complex_writer_arguments(param_fields, '(*%s, os.Error) {' % self.c_reply_type)
+		go_complex_writer_arguments(param_fields, '(*%s, error) {' % self.c_reply_type)
 		go('	return c.%sReply(c.%sRequest(%s))', func_name, func_name, args)
 		go('}')
 		go('')
@@ -436,7 +436,7 @@ def go_reply(self, name):
 	'''
 	fields = replyfields(self.reply)
 	go_complex(self.reply, fields)
-	go('func (c *Conn) %s(cookie Cookie) (*%s, os.Error) {', self.c_reply_name, self.c_reply_type)
+	go('func (c *Conn) %s(cookie Cookie) (*%s, error) {', self.c_reply_name, self.c_reply_type)
 	go('	b, error := c.waitForReply(cookie)')
 	go('	if error != nil { return nil, error }')
 	go('	v := new(%s)', self.c_reply_type)
@@ -477,12 +477,12 @@ def eventfields(self):
 eventlist = []
 
 def dumpeventlist():
-	go('func parseEvent(buf []byte) (Event, os.Error) {')
+	go('func parseEvent(buf []byte) (Event, error) {')
 	go('	switch buf[0] {')
 	for event in eventlist:
 		go('	case %s: return get%sEvent(buf), nil', event, event)
 	go('	}')
-	go('	return nil, os.NewError("unknown event type")')
+	go('	return nil, errors.New("unknown event type")')
 	go('}')
 
 def go_event(self, name):
@@ -592,7 +592,7 @@ def go_open(self):
 	go('')
 	go('package xgb')
 	go('')
-	go('import "os"')
+	go('import "errors"')
 	go('')
 	
 	if _ns.is_ext:

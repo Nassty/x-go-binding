@@ -2,7 +2,7 @@
 
 package xgb
 
-import "os"
+import "errors"
 
 type Char2b struct {
 	Byte1 byte
@@ -1234,7 +1234,7 @@ func (c *Conn) GetWindowAttributesRequest(Window Id) Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetWindowAttributes(Window Id) (*GetWindowAttributesReply, os.Error) {
+func (c *Conn) GetWindowAttributes(Window Id) (*GetWindowAttributesReply, error) {
 	return c.GetWindowAttributesReply(c.GetWindowAttributesRequest(Window))
 }
 
@@ -1256,7 +1256,7 @@ type GetWindowAttributesReply struct {
 	DoNotPropagateMask uint16
 }
 
-func (c *Conn) GetWindowAttributesReply(cookie Cookie) (*GetWindowAttributesReply, os.Error) {
+func (c *Conn) GetWindowAttributesReply(cookie Cookie) (*GetWindowAttributesReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -1427,7 +1427,7 @@ func (c *Conn) GetGeometryRequest(Drawable Id) Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetGeometry(Drawable Id) (*GetGeometryReply, os.Error) {
+func (c *Conn) GetGeometry(Drawable Id) (*GetGeometryReply, error) {
 	return c.GetGeometryReply(c.GetGeometryRequest(Drawable))
 }
 
@@ -1441,7 +1441,7 @@ type GetGeometryReply struct {
 	BorderWidth uint16
 }
 
-func (c *Conn) GetGeometryReply(cookie Cookie) (*GetGeometryReply, os.Error) {
+func (c *Conn) GetGeometryReply(cookie Cookie) (*GetGeometryReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -1467,7 +1467,7 @@ func (c *Conn) QueryTreeRequest(Window Id) Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) QueryTree(Window Id) (*QueryTreeReply, os.Error) {
+func (c *Conn) QueryTree(Window Id) (*QueryTreeReply, error) {
 	return c.QueryTreeReply(c.QueryTreeRequest(Window))
 }
 
@@ -1478,7 +1478,7 @@ type QueryTreeReply struct {
 	Children    []Id
 }
 
-func (c *Conn) QueryTreeReply(cookie Cookie) (*QueryTreeReply, os.Error) {
+func (c *Conn) QueryTreeReply(cookie Cookie) (*QueryTreeReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -1515,7 +1515,7 @@ func (c *Conn) InternAtomRequest(OnlyIfExists bool, Name string) Cookie {
 	return cookie
 }
 
-func (c *Conn) InternAtom(OnlyIfExists bool, Name string) (*InternAtomReply, os.Error) {
+func (c *Conn) InternAtom(OnlyIfExists bool, Name string) (*InternAtomReply, error) {
 	return c.InternAtomReply(c.InternAtomRequest(OnlyIfExists, Name))
 }
 
@@ -1523,7 +1523,7 @@ type InternAtomReply struct {
 	Atom Id
 }
 
-func (c *Conn) InternAtomReply(cookie Cookie) (*InternAtomReply, os.Error) {
+func (c *Conn) InternAtomReply(cookie Cookie) (*InternAtomReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -1543,7 +1543,7 @@ func (c *Conn) GetAtomNameRequest(Atom Id) Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetAtomName(Atom Id) (*GetAtomNameReply, os.Error) {
+func (c *Conn) GetAtomName(Atom Id) (*GetAtomNameReply, error) {
 	return c.GetAtomNameReply(c.GetAtomNameRequest(Atom))
 }
 
@@ -1552,7 +1552,7 @@ type GetAtomNameReply struct {
 	Name    []byte
 }
 
-func (c *Conn) GetAtomNameReply(cookie Cookie) (*GetAtomNameReply, os.Error) {
+func (c *Conn) GetAtomNameReply(cookie Cookie) (*GetAtomNameReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -1624,7 +1624,7 @@ func (c *Conn) GetPropertyRequest(Delete bool, Window Id, Property Id, Type Id, 
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetProperty(Delete bool, Window Id, Property Id, Type Id, LongOffset uint32, LongLength uint32) (*GetPropertyReply, os.Error) {
+func (c *Conn) GetProperty(Delete bool, Window Id, Property Id, Type Id, LongOffset uint32, LongLength uint32) (*GetPropertyReply, error) {
 	return c.GetPropertyReply(c.GetPropertyRequest(Delete, Window, Property, Type, LongOffset, LongLength))
 }
 
@@ -1636,7 +1636,7 @@ type GetPropertyReply struct {
 	Value      []byte
 }
 
-func (c *Conn) GetPropertyReply(cookie Cookie) (*GetPropertyReply, os.Error) {
+func (c *Conn) GetPropertyReply(cookie Cookie) (*GetPropertyReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -1663,7 +1663,7 @@ func (c *Conn) ListPropertiesRequest(Window Id) Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) ListProperties(Window Id) (*ListPropertiesReply, os.Error) {
+func (c *Conn) ListProperties(Window Id) (*ListPropertiesReply, error) {
 	return c.ListPropertiesReply(c.ListPropertiesRequest(Window))
 }
 
@@ -1672,7 +1672,7 @@ type ListPropertiesReply struct {
 	Atoms    []Id
 }
 
-func (c *Conn) ListPropertiesReply(cookie Cookie) (*ListPropertiesReply, os.Error) {
+func (c *Conn) ListPropertiesReply(cookie Cookie) (*ListPropertiesReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -1710,7 +1710,7 @@ func (c *Conn) GetSelectionOwnerRequest(Selection Id) Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetSelectionOwner(Selection Id) (*GetSelectionOwnerReply, os.Error) {
+func (c *Conn) GetSelectionOwner(Selection Id) (*GetSelectionOwnerReply, error) {
 	return c.GetSelectionOwnerReply(c.GetSelectionOwnerRequest(Selection))
 }
 
@@ -1718,7 +1718,7 @@ type GetSelectionOwnerReply struct {
 	Owner Id
 }
 
-func (c *Conn) GetSelectionOwnerReply(cookie Cookie) (*GetSelectionOwnerReply, os.Error) {
+func (c *Conn) GetSelectionOwnerReply(cookie Cookie) (*GetSelectionOwnerReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -1802,7 +1802,7 @@ func (c *Conn) GrabPointerRequest(OwnerEvents bool, GrabWindow Id, EventMask uin
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GrabPointer(OwnerEvents bool, GrabWindow Id, EventMask uint16, PointerMode byte, KeyboardMode byte, ConfineTo Id, Cursor Id, Time Timestamp) (*GrabPointerReply, os.Error) {
+func (c *Conn) GrabPointer(OwnerEvents bool, GrabWindow Id, EventMask uint16, PointerMode byte, KeyboardMode byte, ConfineTo Id, Cursor Id, Time Timestamp) (*GrabPointerReply, error) {
 	return c.GrabPointerReply(c.GrabPointerRequest(OwnerEvents, GrabWindow, EventMask, PointerMode, KeyboardMode, ConfineTo, Cursor, Time))
 }
 
@@ -1810,7 +1810,7 @@ type GrabPointerReply struct {
 	Status byte
 }
 
-func (c *Conn) GrabPointerReply(cookie Cookie) (*GrabPointerReply, os.Error) {
+func (c *Conn) GrabPointerReply(cookie Cookie) (*GrabPointerReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -1903,7 +1903,7 @@ func (c *Conn) GrabKeyboardRequest(OwnerEvents bool, GrabWindow Id, Time Timesta
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GrabKeyboard(OwnerEvents bool, GrabWindow Id, Time Timestamp, PointerMode byte, KeyboardMode byte) (*GrabKeyboardReply, os.Error) {
+func (c *Conn) GrabKeyboard(OwnerEvents bool, GrabWindow Id, Time Timestamp, PointerMode byte, KeyboardMode byte) (*GrabKeyboardReply, error) {
 	return c.GrabKeyboardReply(c.GrabKeyboardRequest(OwnerEvents, GrabWindow, Time, PointerMode, KeyboardMode))
 }
 
@@ -1911,7 +1911,7 @@ type GrabKeyboardReply struct {
 	Status byte
 }
 
-func (c *Conn) GrabKeyboardReply(cookie Cookie) (*GrabKeyboardReply, os.Error) {
+func (c *Conn) GrabKeyboardReply(cookie Cookie) (*GrabKeyboardReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -2016,7 +2016,7 @@ func (c *Conn) QueryPointerRequest(Window Id) Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) QueryPointer(Window Id) (*QueryPointerReply, os.Error) {
+func (c *Conn) QueryPointer(Window Id) (*QueryPointerReply, error) {
 	return c.QueryPointerReply(c.QueryPointerRequest(Window))
 }
 
@@ -2031,7 +2031,7 @@ type QueryPointerReply struct {
 	Mask       uint16
 }
 
-func (c *Conn) QueryPointerReply(cookie Cookie) (*QueryPointerReply, os.Error) {
+func (c *Conn) QueryPointerReply(cookie Cookie) (*QueryPointerReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -2084,7 +2084,7 @@ func (c *Conn) GetMotionEventsRequest(Window Id, Start Timestamp, Stop Timestamp
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetMotionEvents(Window Id, Start Timestamp, Stop Timestamp) (*GetMotionEventsReply, os.Error) {
+func (c *Conn) GetMotionEvents(Window Id, Start Timestamp, Stop Timestamp) (*GetMotionEventsReply, error) {
 	return c.GetMotionEventsReply(c.GetMotionEventsRequest(Window, Start, Stop))
 }
 
@@ -2093,7 +2093,7 @@ type GetMotionEventsReply struct {
 	Events    []Timecoord
 }
 
-func (c *Conn) GetMotionEventsReply(cookie Cookie) (*GetMotionEventsReply, os.Error) {
+func (c *Conn) GetMotionEventsReply(cookie Cookie) (*GetMotionEventsReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -2121,7 +2121,7 @@ func (c *Conn) TranslateCoordinatesRequest(SrcWindow Id, DstWindow Id, SrcX int1
 	return c.sendRequest(b)
 }
 
-func (c *Conn) TranslateCoordinates(SrcWindow Id, DstWindow Id, SrcX int16, SrcY int16) (*TranslateCoordinatesReply, os.Error) {
+func (c *Conn) TranslateCoordinates(SrcWindow Id, DstWindow Id, SrcX int16, SrcY int16) (*TranslateCoordinatesReply, error) {
 	return c.TranslateCoordinatesReply(c.TranslateCoordinatesRequest(SrcWindow, DstWindow, SrcX, SrcY))
 }
 
@@ -2132,7 +2132,7 @@ type TranslateCoordinatesReply struct {
 	DstY       uint16
 }
 
-func (c *Conn) TranslateCoordinatesReply(cookie Cookie) (*TranslateCoordinatesReply, os.Error) {
+func (c *Conn) TranslateCoordinatesReply(cookie Cookie) (*TranslateCoordinatesReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -2190,7 +2190,7 @@ func (c *Conn) GetInputFocusRequest() Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetInputFocus() (*GetInputFocusReply, os.Error) {
+func (c *Conn) GetInputFocus() (*GetInputFocusReply, error) {
 	return c.GetInputFocusReply(c.GetInputFocusRequest())
 }
 
@@ -2199,7 +2199,7 @@ type GetInputFocusReply struct {
 	Focus    Id
 }
 
-func (c *Conn) GetInputFocusReply(cookie Cookie) (*GetInputFocusReply, os.Error) {
+func (c *Conn) GetInputFocusReply(cookie Cookie) (*GetInputFocusReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -2219,7 +2219,7 @@ func (c *Conn) QueryKeymapRequest() Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) QueryKeymap() (*QueryKeymapReply, os.Error) {
+func (c *Conn) QueryKeymap() (*QueryKeymapReply, error) {
 	return c.QueryKeymapReply(c.QueryKeymapRequest())
 }
 
@@ -2227,7 +2227,7 @@ type QueryKeymapReply struct {
 	Keys [32]byte
 }
 
-func (c *Conn) QueryKeymapReply(cookie Cookie) (*QueryKeymapReply, os.Error) {
+func (c *Conn) QueryKeymapReply(cookie Cookie) (*QueryKeymapReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -2330,7 +2330,7 @@ func (c *Conn) QueryFontRequest(Font Id) Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) QueryFont(Font Id) (*QueryFontReply, os.Error) {
+func (c *Conn) QueryFont(Font Id) (*QueryFontReply, error) {
 	return c.QueryFontReply(c.QueryFontRequest(Font))
 }
 
@@ -2352,7 +2352,7 @@ type QueryFontReply struct {
 	CharInfos      []Charinfo
 }
 
-func (c *Conn) QueryFontReply(cookie Cookie) (*QueryFontReply, os.Error) {
+func (c *Conn) QueryFontReply(cookie Cookie) (*QueryFontReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -2399,7 +2399,7 @@ func (c *Conn) QueryTextExtentsRequest(Font Id, String []Char2b) Cookie {
 	return cookie
 }
 
-func (c *Conn) QueryTextExtents(Font Id, String []Char2b) (*QueryTextExtentsReply, os.Error) {
+func (c *Conn) QueryTextExtents(Font Id, String []Char2b) (*QueryTextExtentsReply, error) {
 	return c.QueryTextExtentsReply(c.QueryTextExtentsRequest(Font, String))
 }
 
@@ -2414,7 +2414,7 @@ type QueryTextExtentsReply struct {
 	OverallRight   int32
 }
 
-func (c *Conn) QueryTextExtentsReply(cookie Cookie) (*QueryTextExtentsReply, os.Error) {
+func (c *Conn) QueryTextExtentsReply(cookie Cookie) (*QueryTextExtentsReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -2462,7 +2462,7 @@ func (c *Conn) ListFontsRequest(MaxNames uint16, Pattern []byte) Cookie {
 	return cookie
 }
 
-func (c *Conn) ListFonts(MaxNames uint16, Pattern []byte) (*ListFontsReply, os.Error) {
+func (c *Conn) ListFonts(MaxNames uint16, Pattern []byte) (*ListFontsReply, error) {
 	return c.ListFontsReply(c.ListFontsRequest(MaxNames, Pattern))
 }
 
@@ -2471,7 +2471,7 @@ type ListFontsReply struct {
 	Names    []Str
 }
 
-func (c *Conn) ListFontsReply(cookie Cookie) (*ListFontsReply, os.Error) {
+func (c *Conn) ListFontsReply(cookie Cookie) (*ListFontsReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -2501,7 +2501,7 @@ func (c *Conn) ListFontsWithInfoRequest(MaxNames uint16, Pattern []byte) Cookie 
 	return cookie
 }
 
-func (c *Conn) ListFontsWithInfo(MaxNames uint16, Pattern []byte) (*ListFontsWithInfoReply, os.Error) {
+func (c *Conn) ListFontsWithInfo(MaxNames uint16, Pattern []byte) (*ListFontsWithInfoReply, error) {
 	return c.ListFontsWithInfoReply(c.ListFontsWithInfoRequest(MaxNames, Pattern))
 }
 
@@ -2524,7 +2524,7 @@ type ListFontsWithInfoReply struct {
 	Name           []byte
 }
 
-func (c *Conn) ListFontsWithInfoReply(cookie Cookie) (*ListFontsWithInfoReply, os.Error) {
+func (c *Conn) ListFontsWithInfoReply(cookie Cookie) (*ListFontsWithInfoReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -2578,7 +2578,7 @@ func (c *Conn) GetFontPathRequest() Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetFontPath() (*GetFontPathReply, os.Error) {
+func (c *Conn) GetFontPath() (*GetFontPathReply, error) {
 	return c.GetFontPathReply(c.GetFontPathRequest())
 }
 
@@ -2587,7 +2587,7 @@ type GetFontPathReply struct {
 	Path    []Str
 }
 
-func (c *Conn) GetFontPathReply(cookie Cookie) (*GetFontPathReply, os.Error) {
+func (c *Conn) GetFontPathReply(cookie Cookie) (*GetFontPathReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -3054,7 +3054,7 @@ func (c *Conn) GetImageRequest(Format byte, Drawable Id, X int16, Y int16, Width
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetImage(Format byte, Drawable Id, X int16, Y int16, Width uint16, Height uint16, PlaneMask uint32) (*GetImageReply, os.Error) {
+func (c *Conn) GetImage(Format byte, Drawable Id, X int16, Y int16, Width uint16, Height uint16, PlaneMask uint32) (*GetImageReply, error) {
 	return c.GetImageReply(c.GetImageRequest(Format, Drawable, X, Y, Width, Height, PlaneMask))
 }
 
@@ -3065,7 +3065,7 @@ type GetImageReply struct {
 	Data   []byte
 }
 
-func (c *Conn) GetImageReply(cookie Cookie) (*GetImageReply, os.Error) {
+func (c *Conn) GetImageReply(cookie Cookie) (*GetImageReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -3216,7 +3216,7 @@ func (c *Conn) ListInstalledColormapsRequest(Window Id) Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) ListInstalledColormaps(Window Id) (*ListInstalledColormapsReply, os.Error) {
+func (c *Conn) ListInstalledColormaps(Window Id) (*ListInstalledColormapsReply, error) {
 	return c.ListInstalledColormapsReply(c.ListInstalledColormapsRequest(Window))
 }
 
@@ -3225,7 +3225,7 @@ type ListInstalledColormapsReply struct {
 	Cmaps    []Id
 }
 
-func (c *Conn) ListInstalledColormapsReply(cookie Cookie) (*ListInstalledColormapsReply, os.Error) {
+func (c *Conn) ListInstalledColormapsReply(cookie Cookie) (*ListInstalledColormapsReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -3254,7 +3254,7 @@ func (c *Conn) AllocColorRequest(Cmap Id, Red uint16, Green uint16, Blue uint16)
 	return c.sendRequest(b)
 }
 
-func (c *Conn) AllocColor(Cmap Id, Red uint16, Green uint16, Blue uint16) (*AllocColorReply, os.Error) {
+func (c *Conn) AllocColor(Cmap Id, Red uint16, Green uint16, Blue uint16) (*AllocColorReply, error) {
 	return c.AllocColorReply(c.AllocColorRequest(Cmap, Red, Green, Blue))
 }
 
@@ -3265,7 +3265,7 @@ type AllocColorReply struct {
 	Pixel uint32
 }
 
-func (c *Conn) AllocColorReply(cookie Cookie) (*AllocColorReply, os.Error) {
+func (c *Conn) AllocColorReply(cookie Cookie) (*AllocColorReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -3293,7 +3293,7 @@ func (c *Conn) AllocNamedColorRequest(Cmap Id, Name string) Cookie {
 	return cookie
 }
 
-func (c *Conn) AllocNamedColor(Cmap Id, Name string) (*AllocNamedColorReply, os.Error) {
+func (c *Conn) AllocNamedColor(Cmap Id, Name string) (*AllocNamedColorReply, error) {
 	return c.AllocNamedColorReply(c.AllocNamedColorRequest(Cmap, Name))
 }
 
@@ -3307,7 +3307,7 @@ type AllocNamedColorReply struct {
 	VisualBlue  uint16
 }
 
-func (c *Conn) AllocNamedColorReply(cookie Cookie) (*AllocNamedColorReply, os.Error) {
+func (c *Conn) AllocNamedColorReply(cookie Cookie) (*AllocNamedColorReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -3340,7 +3340,7 @@ func (c *Conn) AllocColorCellsRequest(Contiguous bool, Cmap Id, Colors uint16, P
 	return c.sendRequest(b)
 }
 
-func (c *Conn) AllocColorCells(Contiguous bool, Cmap Id, Colors uint16, Planes uint16) (*AllocColorCellsReply, os.Error) {
+func (c *Conn) AllocColorCells(Contiguous bool, Cmap Id, Colors uint16, Planes uint16) (*AllocColorCellsReply, error) {
 	return c.AllocColorCellsReply(c.AllocColorCellsRequest(Contiguous, Cmap, Colors, Planes))
 }
 
@@ -3351,7 +3351,7 @@ type AllocColorCellsReply struct {
 	Masks     []uint32
 }
 
-func (c *Conn) AllocColorCellsReply(cookie Cookie) (*AllocColorCellsReply, os.Error) {
+func (c *Conn) AllocColorCellsReply(cookie Cookie) (*AllocColorCellsReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -3393,7 +3393,7 @@ func (c *Conn) AllocColorPlanesRequest(Contiguous bool, Cmap Id, Colors uint16, 
 	return c.sendRequest(b)
 }
 
-func (c *Conn) AllocColorPlanes(Contiguous bool, Cmap Id, Colors uint16, Reds uint16, Greens uint16, Blues uint16) (*AllocColorPlanesReply, os.Error) {
+func (c *Conn) AllocColorPlanes(Contiguous bool, Cmap Id, Colors uint16, Reds uint16, Greens uint16, Blues uint16) (*AllocColorPlanesReply, error) {
 	return c.AllocColorPlanesReply(c.AllocColorPlanesRequest(Contiguous, Cmap, Colors, Reds, Greens, Blues))
 }
 
@@ -3405,7 +3405,7 @@ type AllocColorPlanesReply struct {
 	Pixels    []uint32
 }
 
-func (c *Conn) AllocColorPlanesReply(cookie Cookie) (*AllocColorPlanesReply, os.Error) {
+func (c *Conn) AllocColorPlanesReply(cookie Cookie) (*AllocColorPlanesReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -3541,7 +3541,7 @@ func (c *Conn) QueryColorsRequest(Cmap Id, Pixels []uint32) Cookie {
 	return cookie
 }
 
-func (c *Conn) QueryColors(Cmap Id, Pixels []uint32) (*QueryColorsReply, os.Error) {
+func (c *Conn) QueryColors(Cmap Id, Pixels []uint32) (*QueryColorsReply, error) {
 	return c.QueryColorsReply(c.QueryColorsRequest(Cmap, Pixels))
 }
 
@@ -3550,7 +3550,7 @@ type QueryColorsReply struct {
 	Colors    []Rgb
 }
 
-func (c *Conn) QueryColorsReply(cookie Cookie) (*QueryColorsReply, os.Error) {
+func (c *Conn) QueryColorsReply(cookie Cookie) (*QueryColorsReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -3580,7 +3580,7 @@ func (c *Conn) LookupColorRequest(Cmap Id, Name string) Cookie {
 	return cookie
 }
 
-func (c *Conn) LookupColor(Cmap Id, Name string) (*LookupColorReply, os.Error) {
+func (c *Conn) LookupColor(Cmap Id, Name string) (*LookupColorReply, error) {
 	return c.LookupColorReply(c.LookupColorRequest(Cmap, Name))
 }
 
@@ -3593,7 +3593,7 @@ type LookupColorReply struct {
 	VisualBlue  uint16
 }
 
-func (c *Conn) LookupColorReply(cookie Cookie) (*LookupColorReply, os.Error) {
+func (c *Conn) LookupColorReply(cookie Cookie) (*LookupColorReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -3701,7 +3701,7 @@ func (c *Conn) QueryBestSizeRequest(Class byte, Drawable Id, Width uint16, Heigh
 	return c.sendRequest(b)
 }
 
-func (c *Conn) QueryBestSize(Class byte, Drawable Id, Width uint16, Height uint16) (*QueryBestSizeReply, os.Error) {
+func (c *Conn) QueryBestSize(Class byte, Drawable Id, Width uint16, Height uint16) (*QueryBestSizeReply, error) {
 	return c.QueryBestSizeReply(c.QueryBestSizeRequest(Class, Drawable, Width, Height))
 }
 
@@ -3710,7 +3710,7 @@ type QueryBestSizeReply struct {
 	Height uint16
 }
 
-func (c *Conn) QueryBestSizeReply(cookie Cookie) (*QueryBestSizeReply, os.Error) {
+func (c *Conn) QueryBestSizeReply(cookie Cookie) (*QueryBestSizeReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -3735,7 +3735,7 @@ func (c *Conn) QueryExtensionRequest(Name string) Cookie {
 	return cookie
 }
 
-func (c *Conn) QueryExtension(Name string) (*QueryExtensionReply, os.Error) {
+func (c *Conn) QueryExtension(Name string) (*QueryExtensionReply, error) {
 	return c.QueryExtensionReply(c.QueryExtensionRequest(Name))
 }
 
@@ -3746,7 +3746,7 @@ type QueryExtensionReply struct {
 	FirstError  byte
 }
 
-func (c *Conn) QueryExtensionReply(cookie Cookie) (*QueryExtensionReply, os.Error) {
+func (c *Conn) QueryExtensionReply(cookie Cookie) (*QueryExtensionReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -3768,7 +3768,7 @@ func (c *Conn) ListExtensionsRequest() Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) ListExtensions() (*ListExtensionsReply, os.Error) {
+func (c *Conn) ListExtensions() (*ListExtensionsReply, error) {
 	return c.ListExtensionsReply(c.ListExtensionsRequest())
 }
 
@@ -3777,7 +3777,7 @@ type ListExtensionsReply struct {
 	Names    []Str
 }
 
-func (c *Conn) ListExtensionsReply(cookie Cookie) (*ListExtensionsReply, os.Error) {
+func (c *Conn) ListExtensionsReply(cookie Cookie) (*ListExtensionsReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -3818,7 +3818,7 @@ func (c *Conn) GetKeyboardMappingRequest(FirstKeycode byte, Count byte) Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetKeyboardMapping(FirstKeycode byte, Count byte) (*GetKeyboardMappingReply, os.Error) {
+func (c *Conn) GetKeyboardMapping(FirstKeycode byte, Count byte) (*GetKeyboardMappingReply, error) {
 	return c.GetKeyboardMappingReply(c.GetKeyboardMappingRequest(FirstKeycode, Count))
 }
 
@@ -3828,7 +3828,7 @@ type GetKeyboardMappingReply struct {
 	Keysyms           []Keysym
 }
 
-func (c *Conn) GetKeyboardMappingReply(cookie Cookie) (*GetKeyboardMappingReply, os.Error) {
+func (c *Conn) GetKeyboardMappingReply(cookie Cookie) (*GetKeyboardMappingReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -3889,7 +3889,7 @@ func (c *Conn) GetKeyboardControlRequest() Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetKeyboardControl() (*GetKeyboardControlReply, os.Error) {
+func (c *Conn) GetKeyboardControl() (*GetKeyboardControlReply, error) {
 	return c.GetKeyboardControlReply(c.GetKeyboardControlRequest())
 }
 
@@ -3903,7 +3903,7 @@ type GetKeyboardControlReply struct {
 	AutoRepeats      [32]byte
 }
 
-func (c *Conn) GetKeyboardControlReply(cookie Cookie) (*GetKeyboardControlReply, os.Error) {
+func (c *Conn) GetKeyboardControlReply(cookie Cookie) (*GetKeyboardControlReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -3960,7 +3960,7 @@ func (c *Conn) GetPointerControlRequest() Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetPointerControl() (*GetPointerControlReply, os.Error) {
+func (c *Conn) GetPointerControl() (*GetPointerControlReply, error) {
 	return c.GetPointerControlReply(c.GetPointerControlRequest())
 }
 
@@ -3970,7 +3970,7 @@ type GetPointerControlReply struct {
 	Threshold               uint16
 }
 
-func (c *Conn) GetPointerControlReply(cookie Cookie) (*GetPointerControlReply, os.Error) {
+func (c *Conn) GetPointerControlReply(cookie Cookie) (*GetPointerControlReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -4016,7 +4016,7 @@ func (c *Conn) GetScreenSaverRequest() Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetScreenSaver() (*GetScreenSaverReply, os.Error) {
+func (c *Conn) GetScreenSaver() (*GetScreenSaverReply, error) {
 	return c.GetScreenSaverReply(c.GetScreenSaverRequest())
 }
 
@@ -4027,7 +4027,7 @@ type GetScreenSaverReply struct {
 	AllowExposures byte
 }
 
-func (c *Conn) GetScreenSaverReply(cookie Cookie) (*GetScreenSaverReply, os.Error) {
+func (c *Conn) GetScreenSaverReply(cookie Cookie) (*GetScreenSaverReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -4096,7 +4096,7 @@ func (c *Conn) ListHostsRequest() Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) ListHosts() (*ListHostsReply, os.Error) {
+func (c *Conn) ListHosts() (*ListHostsReply, error) {
 	return c.ListHostsReply(c.ListHostsRequest())
 }
 
@@ -4106,7 +4106,7 @@ type ListHostsReply struct {
 	Hosts    []Host
 }
 
-func (c *Conn) ListHostsReply(cookie Cookie) (*ListHostsReply, os.Error) {
+func (c *Conn) ListHostsReply(cookie Cookie) (*ListHostsReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -4217,7 +4217,7 @@ func (c *Conn) SetPointerMappingRequest(Map []byte) Cookie {
 	return cookie
 }
 
-func (c *Conn) SetPointerMapping(Map []byte) (*SetPointerMappingReply, os.Error) {
+func (c *Conn) SetPointerMapping(Map []byte) (*SetPointerMappingReply, error) {
 	return c.SetPointerMappingReply(c.SetPointerMappingRequest(Map))
 }
 
@@ -4225,7 +4225,7 @@ type SetPointerMappingReply struct {
 	Status byte
 }
 
-func (c *Conn) SetPointerMappingReply(cookie Cookie) (*SetPointerMappingReply, os.Error) {
+func (c *Conn) SetPointerMappingReply(cookie Cookie) (*SetPointerMappingReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -4244,7 +4244,7 @@ func (c *Conn) GetPointerMappingRequest() Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetPointerMapping() (*GetPointerMappingReply, os.Error) {
+func (c *Conn) GetPointerMapping() (*GetPointerMappingReply, error) {
 	return c.GetPointerMappingReply(c.GetPointerMappingRequest())
 }
 
@@ -4253,7 +4253,7 @@ type GetPointerMappingReply struct {
 	Map    []byte
 }
 
-func (c *Conn) GetPointerMappingReply(cookie Cookie) (*GetPointerMappingReply, os.Error) {
+func (c *Conn) GetPointerMappingReply(cookie Cookie) (*GetPointerMappingReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -4292,7 +4292,7 @@ func (c *Conn) SetModifierMappingRequest(KeycodesPerModifier byte, Keycodes []by
 	return cookie
 }
 
-func (c *Conn) SetModifierMapping(KeycodesPerModifier byte, Keycodes []byte) (*SetModifierMappingReply, os.Error) {
+func (c *Conn) SetModifierMapping(KeycodesPerModifier byte, Keycodes []byte) (*SetModifierMappingReply, error) {
 	return c.SetModifierMappingReply(c.SetModifierMappingRequest(KeycodesPerModifier, Keycodes))
 }
 
@@ -4300,7 +4300,7 @@ type SetModifierMappingReply struct {
 	Status byte
 }
 
-func (c *Conn) SetModifierMappingReply(cookie Cookie) (*SetModifierMappingReply, os.Error) {
+func (c *Conn) SetModifierMappingReply(cookie Cookie) (*SetModifierMappingReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -4319,7 +4319,7 @@ func (c *Conn) GetModifierMappingRequest() Cookie {
 	return c.sendRequest(b)
 }
 
-func (c *Conn) GetModifierMapping() (*GetModifierMappingReply, os.Error) {
+func (c *Conn) GetModifierMapping() (*GetModifierMappingReply, error) {
 	return c.GetModifierMappingReply(c.GetModifierMappingRequest())
 }
 
@@ -4328,7 +4328,7 @@ type GetModifierMappingReply struct {
 	Keycodes            []byte
 }
 
-func (c *Conn) GetModifierMappingReply(cookie Cookie) (*GetModifierMappingReply, os.Error) {
+func (c *Conn) GetModifierMappingReply(cookie Cookie) (*GetModifierMappingReply, error) {
 	b, error := c.waitForReply(cookie)
 	if error != nil {
 		return nil, error
@@ -4351,7 +4351,7 @@ func (c *Conn) NoOperation() {
 	c.sendRequest(b)
 }
 
-func parseEvent(buf []byte) (Event, os.Error) {
+func parseEvent(buf []byte) (Event, error) {
 	switch buf[0] {
 	case KeyPress:
 		return getKeyPressEvent(buf), nil
@@ -4420,7 +4420,7 @@ func parseEvent(buf []byte) (Event, os.Error) {
 	case MappingNotify:
 		return getMappingNotifyEvent(buf), nil
 	}
-	return nil, os.NewError("unknown event type")
+	return nil, errors.New("unknown event type")
 }
 
 var errorNames = map[byte]string{

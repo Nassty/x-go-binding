@@ -7,6 +7,7 @@
 package xgb
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -24,7 +25,7 @@ type Conn struct {
 	nextCookie    Cookie
 	replies       map[Cookie][]byte
 	events        queue
-	err           os.Error
+	err           error
 	display       string
 	defaultScreen int
 	scratch       [32]byte
@@ -53,7 +54,7 @@ type Error struct {
 	Id     Id
 }
 
-func (e *Error) String() string {
+func (e *Error) Error() string {
 	return fmt.Sprintf("Bad%s (major=%d minor=%d cookie=%d id=0x%x)",
 		errorNames[e.Detail], e.Major, e.Minor, e.Cookie, e.Id)
 }
@@ -204,7 +205,7 @@ func (c *Conn) sendKeysymList(list []Keysym, length int) {
 // If it is a protocol error then it is returned as an Error.
 // Events are pushed onto the event queue and replies to requests
 // are stashed away in a map indexed by the sequence number.
-func (c *Conn) readNextReply() os.Error {
+func (c *Conn) readNextReply() error {
 	buf := make([]byte, 32)
 	if _, err := io.ReadFull(c.conn, buf); err != nil {
 		fmt.Fprintf(os.Stderr, "x protocol read error: %s\n", err)
@@ -248,10 +249,10 @@ func (c *Conn) readNextReply() os.Error {
 // waitForReply looks for a reply in the map indexed by sequence number.
 // If the reply is not in the map it will block while reading replies from the server
 // until the reply is found or an error occurs.
-func (c *Conn) waitForReply(cookie Cookie) ([]byte, os.Error) {
+func (c *Conn) waitForReply(cookie Cookie) ([]byte, error) {
 	for {
 		if reply, ok := c.replies[cookie]; ok {
-			c.replies[cookie] = reply, false
+			delete(c.replies, cookie)
 			return reply, nil
 		}
 		if err := c.readNextReply(); err != nil {
@@ -263,7 +264,7 @@ func (c *Conn) waitForReply(cookie Cookie) ([]byte, os.Error) {
 
 // WaitForEvent returns the next event from the server.
 // It will block until an event is available.
-func (c *Conn) WaitForEvent() (Event, os.Error) {
+func (c *Conn) WaitForEvent() (Event, error) {
 	for {
 		if reply := c.events.dequeue(); reply != nil {
 			return parseEvent(reply)
@@ -278,7 +279,7 @@ func (c *Conn) WaitForEvent() (Event, os.Error) {
 // PollForEvent returns the next event from the server if one is available in the internal queue.
 // It will not read from the connection, so you must call WaitForEvent to receive new events.
 // Only use this function to empty the queue without blocking.
-func (c *Conn) PollForEvent() (Event, os.Error) {
+func (c *Conn) PollForEvent() (Event, error) {
 	if reply := c.events.dequeue(); reply != nil {
 		return parseEvent(reply)
 	}
@@ -293,7 +294,7 @@ func (c *Conn) PollForEvent() (Event, os.Error) {
 //	Dial("/tmp/launch-123/:0") // connect to net.Dial("unix", "", "/tmp/launch-123/:0")
 //	Dial("hostname:2.1")       // connect to net.Dial("tcp", "", "hostname:6002")
 //	Dial("tcp/hostname:1.0")   // connect to net.Dial("tcp", "", "hostname:6001")
-func Dial(display string) (*Conn, os.Error) {
+func Dial(display string) (*Conn, error) {
 	c, err := connect(display)
 	if err != nil {
 		return nil, err
@@ -307,7 +308,7 @@ func Dial(display string) (*Conn, os.Error) {
 
 	// Assume that the authentication protocol is "MIT-MAGIC-COOKIE-1".
 	if authName != "MIT-MAGIC-COOKIE-1" || len(authData) != 16 {
-		return nil, os.NewError("unsupported auth protocol " + authName)
+		return nil, errors.New("unsupported auth protocol " + authName)
 	}
 
 	buf := make([]byte, 12+pad(len(authName))+pad(len(authData)))
@@ -335,7 +336,7 @@ func Dial(display string) (*Conn, os.Error) {
 	dataLen := get16(head[6:])
 
 	if major != 11 || minor != 0 {
-		return nil, os.NewError(fmt.Sprintf("x protocol version mismatch: %d.%d", major, minor))
+		return nil, errors.New(fmt.Sprintf("x protocol version mismatch: %d.%d", major, minor))
 	}
 
 	buf = make([]byte, int(dataLen)*4+8, int(dataLen)*4+8)
@@ -346,7 +347,7 @@ func Dial(display string) (*Conn, os.Error) {
 
 	if code == 0 {
 		reason := buf[8 : 8+reasonLen]
-		return nil, os.NewError(fmt.Sprintf("x protocol authentication refused: %s", string(reason)))
+		return nil, errors.New(fmt.Sprintf("x protocol authentication refused: %s", string(reason)))
 	}
 
 	getSetupInfo(buf, &c.Setup)
@@ -369,7 +370,6 @@ func (c *Conn) Close() { c.conn.Close() }
 // 0 or the one given in the display argument to Dial.
 func (c *Conn) DefaultScreen() *ScreenInfo { return &c.Setup.Roots[c.defaultScreen] }
 
-
 // ClientMessageData holds the data from a client message,
 // duplicated in three forms because Go doesn't have unions.
 type ClientMessageData struct {
@@ -389,19 +389,19 @@ func getClientMessageData(b []byte, v *ClientMessageData) int {
 	return 20
 }
 
-func connect(display string) (*Conn, os.Error) {
+func connect(display string) (*Conn, error) {
 	if len(display) == 0 {
 		display = os.Getenv("DISPLAY")
 	}
 
 	display0 := display
 	if len(display) == 0 {
-		return nil, os.NewError("empty display string")
+		return nil, errors.New("empty display string")
 	}
 
 	colonIdx := strings.LastIndex(display, ":")
 	if colonIdx < 0 {
-		return nil, os.NewError("bad display string: " + display0)
+		return nil, errors.New("bad display string: " + display0)
 	}
 
 	var protocol, socket string
@@ -421,7 +421,7 @@ func connect(display string) (*Conn, os.Error) {
 
 	display = display[colonIdx+1 : len(display)]
 	if len(display) == 0 {
-		return nil, os.NewError("bad display string: " + display0)
+		return nil, errors.New("bad display string: " + display0)
 	}
 
 	var scr string
@@ -435,13 +435,13 @@ func connect(display string) (*Conn, os.Error) {
 
 	dispnum, err := strconv.Atoui(c.display)
 	if err != nil {
-		return nil, os.NewError("bad display string: " + display0)
+		return nil, errors.New("bad display string: " + display0)
 	}
 
 	if len(scr) != 0 {
 		c.defaultScreen, err = strconv.Atoi(scr)
 		if err != nil {
-			return nil, os.NewError("bad display string: " + display0)
+			return nil, errors.New("bad display string: " + display0)
 		}
 	}
 
@@ -458,7 +458,7 @@ func connect(display string) (*Conn, os.Error) {
 	}
 
 	if err != nil {
-		return nil, os.NewError("cannot connect to " + display0 + ": " + err.String())
+		return nil, errors.New("cannot connect to " + display0 + ": " + err.Error())
 	}
 	return c, nil
 }

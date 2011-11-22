@@ -6,11 +6,12 @@ package xgb
 
 import (
 	"bufio"
+	"errors"
 	"io"
 	"os"
 )
 
-func getU16BE(r io.Reader, b []byte) (uint16, os.Error) {
+func getU16BE(r io.Reader, b []byte) (uint16, error) {
 	_, err := io.ReadFull(r, b[0:2])
 	if err != nil {
 		return 0, err
@@ -18,13 +19,13 @@ func getU16BE(r io.Reader, b []byte) (uint16, os.Error) {
 	return uint16(b[0])<<8 + uint16(b[1]), nil
 }
 
-func getBytes(r io.Reader, b []byte) ([]byte, os.Error) {
+func getBytes(r io.Reader, b []byte) ([]byte, error) {
 	n, err := getU16BE(r, b)
 	if err != nil {
 		return nil, err
 	}
 	if int(n) > len(b) {
-		return nil, os.NewError("bytes too long for buffer")
+		return nil, errors.New("bytes too long for buffer")
 	}
 	_, err = io.ReadFull(r, b[0:n])
 	if err != nil {
@@ -33,7 +34,7 @@ func getBytes(r io.Reader, b []byte) ([]byte, os.Error) {
 	return b[0:n], nil
 }
 
-func getString(r io.Reader, b []byte) (string, os.Error) {
+func getString(r io.Reader, b []byte) (string, error) {
 	b, err := getBytes(r, b)
 	if err != nil {
 		return "", err
@@ -44,7 +45,7 @@ func getString(r io.Reader, b []byte) (string, os.Error) {
 // readAuthority reads the X authority file for the DISPLAY.
 // If hostname == "" or hostname == "localhost",
 // readAuthority uses the system's hostname (as returned by os.Hostname) instead.
-func readAuthority(hostname, display string) (name string, data []byte, err os.Error) {
+func readAuthority(hostname, display string) (name string, data []byte, err error) {
 	// b is a scratch buffer to use and should be at least 256 bytes long
 	// (i.e. it should be able to hold a hostname).
 	var b [256]byte
@@ -63,7 +64,7 @@ func readAuthority(hostname, display string) (name string, data []byte, err os.E
 	if len(fname) == 0 {
 		home := os.Getenv("HOME")
 		if len(home) == 0 {
-			err = os.NewError("Xauthority not found: $XAUTHORITY, $HOME not set")
+			err = errors.New("Xauthority not found: $XAUTHORITY, $HOME not set")
 			return "", nil, err
 		}
 		fname = home + "/.Xauthority"
