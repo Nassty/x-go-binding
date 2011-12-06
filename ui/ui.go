@@ -8,6 +8,7 @@ package ui
 import (
 	"image"
 	"image/draw"
+	"time"
 )
 
 // A Window represents a single graphics window.
@@ -41,8 +42,8 @@ type MouseEvent struct {
 	Buttons int
 	// Loc is the location of the cursor.
 	Loc image.Point
-	// Nsec is the event's timestamp.
-	Nsec int64
+	// Time is the event's timestamp.
+	Time time.Time
 }
 
 // A ConfigEvent is sent each time the window's color model or size changes.

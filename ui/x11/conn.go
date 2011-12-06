@@ -220,12 +220,12 @@ func (c *conn) readSocket() {
 			} else {
 				c.mouseState.Buttons &^= mask
 			}
-			c.mouseState.Nsec = time.Nanoseconds()
+			c.mouseState.Time = time.Now()
 			c.eventc <- c.mouseState
 		case 0x06: // Motion notify.
 			c.mouseState.Loc.X = int(int16(c.buf[25])<<8 | int16(c.buf[24]))
 			c.mouseState.Loc.Y = int(int16(c.buf[27])<<8 | int16(c.buf[26]))
-			c.mouseState.Nsec = time.Nanoseconds()
+			c.mouseState.Time = time.Now()
 			c.eventc <- c.mouseState
 		case 0x0c: // Expose.
 			// A single user action could trigger multiple expose events (e.g. if moving another
