@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	"x-go-binding.googlecode.com/hg/ui"
+	"code.google.com/p/x-go-binding/ui"
 )
 
 type resID uint32 // X resource IDs.

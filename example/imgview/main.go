@@ -11,8 +11,8 @@ import (
 	"image/draw"
 	"os"
 
-	"x-go-binding.googlecode.com/hg/ui"
-	"x-go-binding.googlecode.com/hg/ui/x11"
+	"code.google.com/p/x-go-binding/ui"
+	"code.google.com/p/x-go-binding/ui/x11"
 
 	_ "image/gif"
 	_ "image/jpeg"

@@ -7,7 +7,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"x-go-binding.googlecode.com/hg/xgb"
+
+	"code.google.com/p/x-go-binding/xgb"
 )
 
 func main() {
